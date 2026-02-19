@@ -1,20 +1,48 @@
-﻿@font-face {
-  font-family: "SF Pro Display";
-  src: url("/fonts/SFPRODISPLAYREGULAR.OTF") format("opentype");
+@font-face {
+  font-family: "SF Pro Text";
+  src: url("/fonts/SF-Pro-Text-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
+  font-family: "SF Pro Text";
+  src: url("/fonts/SF-Pro-Text-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Text";
+  src: url("/fonts/SF-Pro-Text-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Text";
+  src: url("/fonts/SF-Pro-Text-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
   font-family: "SF Pro Display";
-  src: url("/fonts/SFPRODISPLAYMEDIUM.OTF") format("opentype");
+  src: url("/fonts/SF-Pro-Display-Medium.otf") format("opentype");
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: "SF Pro Display";
-  src: url("/fonts/SFPRODISPLAYBOLD.OTF") format("opentype");
+  src: url("/fonts/SF-Pro-Display-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src: url("/fonts/SF-Pro-Display-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
 }
@@ -35,13 +63,13 @@
   --radius-xl: 30px;
   --radius-lg: 22px;
   --radius-md: 16px;
-  --shadow-main: 0 24px 44px rgba(24, 24, 31, 0.17);
-  --shadow-soft: 0 12px 24px rgba(24, 24, 31, 0.08);
-  --font-title: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --shadow-main: 0 18px 34px rgba(24, 24, 31, 0.12);
+  --shadow-soft: 0 10px 20px rgba(24, 24, 31, 0.07);
+  --font-title: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+  --font-body: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
   --auth-accent: #4f7f88;
   --auth-accent-strong: #396975;
-  --auth-pill-bg: #e9ecef;
+  --auth-pill-bg: #edeeef;
   --auth-ink: #1f2328;
   --auth-ink-soft: #606872;
   --auth-cta-dark: #1f2024;
@@ -72,6 +100,16 @@ input,
 select,
 textarea {
   font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-title);
+  font-weight: 600;
 }
 
 .appShell {
@@ -138,8 +176,8 @@ textarea {
 .heroTag {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 500;
 }
@@ -147,10 +185,10 @@ textarea {
 .heroTitle {
   margin: 10px 0 8px;
   font-family: var(--font-title);
-  font-size: clamp(38px, 12vw, 56px);
-  line-height: 1;
-  letter-spacing: -0.045em;
-  font-weight: 700;
+  font-size: clamp(34px, 9vw, 50px);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 600;
 }
 
 .heroTitleSm {
@@ -161,7 +199,7 @@ textarea {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
-  line-height: 1.42;
+  line-height: 1.5;
 }
 
 .heroActions {
@@ -178,20 +216,21 @@ textarea {
 }
 
 .heroActionsDashControls {
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
 
 .topControlChip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 11px;
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(44, 43, 52, 0.08);
+  background: rgba(255, 255, 255, 0.78);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -200,13 +239,14 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
-  padding: 6px 12px;
+  min-height: 24px;
+  min-width: 24px;
+  padding: 3px 8px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(44, 43, 52, 0.08);
+  background: rgba(255, 255, 255, 0.66);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -241,16 +281,16 @@ textarea {
 .titleSmall {
   margin: 0;
   font-family: var(--font-title);
-  font-size: 28px;
-  letter-spacing: -0.04em;
-  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 .titleCard {
   margin: 0;
-  font-size: 31px;
-  letter-spacing: -0.05em;
-  font-weight: 700;
+  font-size: clamp(22px, 4vw, 24px);
+  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 .subtitleSmall {
@@ -264,7 +304,7 @@ textarea {
   position: sticky;
   top: calc(env(safe-area-inset-top) + 8px);
   z-index: 8;
-  padding: 12px;
+  padding: 10px;
 }
 
 .toolbarGrid {
@@ -281,7 +321,7 @@ textarea {
   padding: 0 14px;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
   cursor: pointer;
   transition: filter 0.16s ease, box-shadow 0.16s ease;
@@ -293,14 +333,14 @@ textarea {
 }
 
 .btnGhost {
-  background: rgba(255, 255, 255, 0.82);
-  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(44, 43, 52, 0.08);
 }
 
 .btnCompact {
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 10px;
-  font-size: 13px;
+  font-size: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -318,10 +358,25 @@ textarea {
   font-size: 13px;
 }
 
+.btnTopLink {
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: #6f7680;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgba(111, 118, 128, 0.45);
+  text-underline-offset: 3px;
+  box-shadow: none;
+}
+
 .btnPrimary {
   color: #ffffff;
   background: linear-gradient(135deg, var(--blue) 0%, var(--blue-strong) 100%);
-  box-shadow: 0 14px 24px rgba(10, 132, 255, 0.36);
+  box-shadow: 0 10px 18px rgba(10, 132, 255, 0.24);
 }
 
 .btnDangerSoft {
@@ -339,10 +394,12 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  min-height: 46px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: var(--surface-strong);
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(44, 43, 52, 0.08);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4px 10px rgba(23, 34, 45, 0.05);
+  font-size: 14px;
 }
 
 .iconBtn svg {
@@ -354,20 +411,20 @@ textarea {
 .fieldLabel {
   margin: 11px 0 7px;
   font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
+  font-weight: 400;
+  color: #7c8189;
 }
 
 .input,
 .select,
 .textarea {
   width: 100%;
-  min-height: 45px;
-  border-radius: 15px;
-  border: 1px solid var(--line);
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(44, 43, 52, 0.1);
   background: var(--surface-strong);
   color: var(--text);
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
@@ -383,15 +440,22 @@ textarea {
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: rgba(10, 132, 255, 0.44);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.18);
+  border-color: rgba(10, 132, 255, 0.28);
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.12);
+}
+
+.select:disabled,
+.input:disabled,
+.textarea:disabled {
+  background: rgba(248, 249, 251, 0.9);
+  color: #70757d;
 }
 
 .progressTrack {
   margin-top: 12px;
-  height: 8px;
+  height: 6px;
   border-radius: 999px;
-  background: rgba(20, 22, 34, 0.12);
+  background: rgba(21, 48, 79, 0.1);
   overflow: hidden;
 }
 
@@ -399,15 +463,15 @@ textarea {
   height: 100%;
   width: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, #f09843 0%, #ff3568 100%);
+  background: #0a84ff;
 }
 
 .schedulePanel {
   margin-top: 12px;
   padding: 14px;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--line);
-  background: var(--surface-soft);
+  border: 1px solid rgba(44, 43, 52, 0.08);
+  background: rgba(255, 255, 255, 0.64);
 }
 
 .composerCard {
@@ -428,17 +492,14 @@ textarea {
 .durationGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
+  gap: 8px;
 }
 
-.previewWaktu {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px dashed rgba(10, 132, 255, 0.34);
-  background: rgba(10, 132, 255, 0.08);
-  color: #135ca6;
-  font-size: 12px;
+.durationGrid .input {
+  min-height: 40px;
+  border-radius: 13px;
+  text-align: center;
+  padding-inline: 10px;
   font-weight: 500;
 }
 
@@ -448,9 +509,13 @@ textarea {
   line-height: 1.45;
 }
 
+.metaTextSoft {
+  color: #727980;
+}
+
 .qrWrap {
   margin-top: 12px;
-  border-top: 1px dashed var(--line);
+  border-top: 1px solid rgba(44, 43, 52, 0.09);
   padding-top: 12px;
 }
 
@@ -530,7 +595,7 @@ textarea {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px dashed rgba(10, 132, 255, 0.4);
+  border: 1px solid rgba(10, 132, 255, 0.32);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -570,7 +635,7 @@ textarea {
 
 .jobTitle {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.015em;
 }
 
@@ -625,14 +690,33 @@ textarea {
 
 .edgeTitle {
   margin: 6px 0 10px;
-  font-size: clamp(44px, 12vw, 66px);
-  font-weight: 700;
-  letter-spacing: -0.055em;
+  font-family: var(--font-title);
+  font-size: clamp(34px, 8vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
 }
 
 .headerLine {
   margin-top: 10px;
-  border-top: 1px dashed rgba(14, 16, 20, 0.22);
+  border-top: 1px solid rgba(14, 16, 20, 0.12);
+}
+
+.titleCardSubtle {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.advancedAudiencePanel {
+  margin-top: 8px;
+}
+
+.advancedAudienceLabel {
+  margin: 0 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .authorizeLayout {
@@ -684,7 +768,7 @@ textarea {
 .qrBarWrap {
   margin: 16px auto 12px;
   padding: 14px;
-  border: 1px dashed var(--line);
+  border: 1px solid rgba(44, 43, 52, 0.1);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.72);
 }
@@ -824,13 +908,59 @@ textarea {
   max-width: 320px;
 }
 
+.auth-brand {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6f7a85;
+}
+
+.auth-brand--inline {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.auth-hero-fallback {
+  width: min(76vw, 254px);
+  max-width: 254px;
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(44% 42% at 26% 22%, rgba(79, 127, 136, 0.22), transparent 72%),
+    linear-gradient(180deg, rgba(236, 241, 244, 0.9), rgba(226, 233, 238, 0.86));
+  border: 1px solid rgba(95, 109, 121, 0.15);
+  color: #456f79;
+  box-shadow: 0 12px 26px rgba(28, 48, 58, 0.1);
+}
+
+.auth-hero-fallback span {
+  display: inline-flex;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 40px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(69, 111, 121, 0.22);
+}
+
 .auth-intro-title {
   margin: 0;
   font-family: var(--font-title);
-  font-size: clamp(25px, 7.4vw, 32px);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: #47494e;
+  font-size: clamp(24px, 7vw, 30px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: #4b515a;
 }
 
 .auth-intro-subtitle {
@@ -862,9 +992,10 @@ textarea {
 }
 
 .auth-topbar {
-  min-height: 44px;
+  min-height: 52px;
   display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .auth-back-btn {
@@ -879,6 +1010,7 @@ textarea {
   background: rgba(228, 233, 236, 0.92);
   color: #8b9098;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .auth-back-btn svg {
@@ -888,12 +1020,13 @@ textarea {
 }
 
 .auth-heading {
-  margin: 14px 0 24px;
+  margin: 8px 0 24px;
   font-family: var(--font-title);
-  font-size: clamp(36px, 9.6vw, 48px);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
-  color: #5a5c60;
+  font-size: clamp(32px, 8.6vw, 42px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+  color: #4f545d;
 }
 
 .auth-heading--register {
@@ -927,7 +1060,14 @@ textarea {
   gap: 10px;
   padding: 0 16px;
   background: var(--auth-pill-bg);
-  border: 1px solid rgba(115, 123, 132, 0.08);
+  border: 1px solid rgba(100, 109, 118, 0.14);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.auth-input-shell:focus-within {
+  border-color: rgba(79, 127, 136, 0.34);
+  box-shadow: 0 0 0 3px rgba(79, 127, 136, 0.14);
+  background: #f1f2f3;
 }
 
 .auth-form .auth-input-shell {
@@ -962,14 +1102,24 @@ textarea {
   border: 0;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--auth-ink);
   outline: none;
 }
 
 .auth-input-shell input::placeholder {
-  color: #7b8189;
+  color: #8a9199;
+}
+
+.auth-input-shell input:-webkit-autofill,
+.auth-input-shell input:-webkit-autofill:hover,
+.auth-input-shell input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--auth-ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--auth-pill-bg) inset;
+  box-shadow: 0 0 0 1000px var(--auth-pill-bg) inset;
+  caret-color: var(--auth-ink);
+  transition: background-color 9999s ease-out 0s;
 }
 
 .auth-eye-btn {
@@ -1001,7 +1151,7 @@ textarea {
   color: #487581;
   font-family: var(--font-body);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -1020,7 +1170,8 @@ textarea {
 
 .auth-mobile-footer {
   margin-top: auto;
-  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  padding-top: 6px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -1031,7 +1182,7 @@ textarea {
 
 .auth-mobile-footer--signin,
 .auth-mobile-footer--register {
-  gap: 16px;
+  gap: 20px;
 }
 
 .auth-btn {
@@ -1042,7 +1193,7 @@ textarea {
   padding: 0 16px;
   font-family: var(--font-body);
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   transition: filter 0.16s ease, opacity 0.16s ease;
@@ -1054,7 +1205,7 @@ textarea {
 
 .auth-btn--dark {
   color: #ffffff;
-  background: var(--auth-cta-dark);
+  background: var(--auth-accent);
 }
 
 .auth-btn--accent {
@@ -1074,7 +1225,8 @@ textarea {
   margin: 0;
   text-align: center;
   color: #77808a;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .auth-muted-copy {
@@ -1084,8 +1236,33 @@ textarea {
 
 .auth-switch-link {
   color: var(--auth-accent-strong);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
+}
+
+.auth-advanced-toggle {
+  margin-top: 10px;
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #4f7480;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.auth-advanced-hint {
+  margin: 8px 0 0;
+  color: #8a9199;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.auth-input-shell--advanced {
+  margin-top: 10px;
 }
 
 .auth-switch-link:hover {
@@ -1153,12 +1330,18 @@ textarea {
     height: auto;
   }
 
+  .auth-hero-fallback {
+    width: min(88%, 336px);
+    max-width: 336px;
+  }
+
   .auth-desktop-hero-title {
     margin: 0;
     font-family: var(--font-title);
-    font-size: clamp(40px, 3.3vw, 54px);
-    line-height: 0.95;
-    letter-spacing: -0.05em;
+    font-size: clamp(34px, 3vw, 46px);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-weight: 600;
     color: #43464c;
   }
 
@@ -1185,7 +1368,7 @@ textarea {
 
   .auth-topbar {
     min-height: 0;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
 
   .auth-back-btn {
@@ -1194,7 +1377,7 @@ textarea {
 
   .auth-heading {
     margin: 0 0 24px;
-    font-size: clamp(56px, 4.2vw, 70px);
+    font-size: clamp(44px, 3.6vw, 56px);
   }
 
   .auth-heading--register {
@@ -1216,7 +1399,7 @@ textarea {
   }
 
   .auth-intro-title {
-    font-size: clamp(44px, 3.4vw, 56px);
+    font-size: clamp(38px, 3.1vw, 48px);
   }
 
   .auth-intro-subtitle {
@@ -1230,7 +1413,7 @@ textarea {
 
   .auth-btn {
     min-height: 60px;
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .auth-switch-copy,
@@ -1246,11 +1429,11 @@ textarea {
   }
 
   .heroTitle {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   .edgeTitle {
-    font-size: 44px;
+    font-size: 34px;
   }
 
   .auth-shell {
@@ -1267,7 +1450,7 @@ textarea {
   }
 
   .auth-heading {
-    font-size: 38px;
+    font-size: 34px;
   }
 
   .auth-input-shell {
@@ -1276,7 +1459,12 @@ textarea {
 
   .auth-btn {
     min-height: 54px;
-    font-size: 16px;
+    font-size: 15px;
+  }
+
+  .auth-switch-copy,
+  .auth-muted-copy {
+    font-size: 13px;
   }
 }
 

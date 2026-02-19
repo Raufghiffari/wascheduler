@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
-import { formatPreviewPostAt } from '../../shared/preview-waktu';
 
 type StatusWa = {
   status: 'mati' | 'menghubungkan' | 'terhubung' | 'logout';
@@ -385,32 +384,6 @@ function DashboardApp(): React.JSX.Element {
     [nowMs],
   );
 
-  const previewStatus = useMemo(
-    () =>
-      formatPreviewPostAt(
-        {
-          jam: normalisasiAngka(durasiJam, 999),
-          menit: normalisasiAngka(durasiMenit, 59),
-          detik: normalisasiAngka(durasiDetik, 59),
-        },
-        new Date(nowMs),
-      ),
-    [durasiJam, durasiMenit, durasiDetik, nowMs],
-  );
-
-  const previewSend = useMemo(
-    () =>
-      formatPreviewPostAt(
-        {
-          jam: normalisasiAngka(sendJam, 999),
-          menit: normalisasiAngka(sendMenit, 59),
-          detik: normalisasiAngka(sendDetik, 59),
-        },
-        new Date(nowMs),
-      ),
-    [sendJam, sendMenit, sendDetik, nowMs],
-  );
-
   const jumlahSelesai = useMemo(
     () => jobs.filter((job) => job.status === 'success' || job.status === 'cancel').length,
     [jobs],
@@ -714,14 +687,14 @@ function DashboardApp(): React.JSX.Element {
       >
         <motion.header className="surfaceCard heroCard heroCardDash" layout transition={spring}>
           <p className="heroTag">WA Status Scheduler</p>
-          <h1 className="edgeTitle">DASHBOARD</h1>
+          <h1 className="edgeTitle">Dashboard</h1>
           <p className="heroSubtitle">Here's Your Panel</p>
           <div className="heroActions heroActionsDashControls">
             <span className="topControlChip">Account: {namaAccount || '-'}</span>
             <span className="topControlChip">{teksJam}</span>
             <motion.button
               type="button"
-              className="btn btnGhost btnCompact btnTopControl"
+              className="btn btnTopLink"
               whileTap={reduceMotion ? undefined : { scale: 0.98 }}
               onClick={() => void kirimLogout().finally(() => redirectTop('/'))}
             >
@@ -734,8 +707,8 @@ function DashboardApp(): React.JSX.Element {
         <motion.section className="surfaceCard cardBody" initial={reduceMotion ? undefined : { opacity: 0, y: 14 }} animate={reduceMotion ? undefined : { opacity: 1, y: 0 }} transition={{ ...spring, delay: reduceMotion ? 0 : 0.04 }}>
           <div className="row">
             <div>
-              <h2 className="titleCard">WhatsApp</h2>
-              <div className="metaText">{waCatatan}</div>
+              <h2 className="titleCard titleCardSubtle">WhatsApp</h2>
+              <div className="metaText metaTextSoft">{waCatatan}</div>
             </div>
           </div>
         </motion.section>
@@ -795,7 +768,6 @@ function DashboardApp(): React.JSX.Element {
                   <input className="input" inputMode="numeric" placeholder="minutes" value={durasiMenit} onChange={(e) => setDurasiMenit(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                   <input className="input" inputMode="numeric" placeholder="seconds" value={durasiDetik} onChange={(e) => setDurasiDetik(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                 </div>
-                <div className="previewWaktu">{previewStatus.teks}</div>
 
                 <div className="fieldLabel">Type</div>
                 <select className="select" value="wa_status" disabled><option value="wa_status">WA Status</option></select>
@@ -812,11 +784,14 @@ function DashboardApp(): React.JSX.Element {
                 </select>
 
                 {infoAudience.tampil ? (
-                  <>
+                  <div className={audienceTipe === 'developer_command' ? 'advancedAudiencePanel' : undefined}>
+                    {audienceTipe === 'developer_command' ? (
+                      <p className="metaText metaTextSoft advancedAudienceLabel">Advanced Audience Option</p>
+                    ) : null}
                     <div className="fieldLabel">{infoAudience.label}</div>
                     <textarea className="textarea" value={audienceInput} placeholder={infoAudience.placeholder} onChange={(e) => setAudienceInput(e.target.value)} />
                     <div className="metaText">{infoAudience.hint}</div>
-                  </>
+                  </div>
                 ) : null}
 
                 <div className="spacer12" />
@@ -868,7 +843,6 @@ function DashboardApp(): React.JSX.Element {
                   <input className="input" inputMode="numeric" placeholder="minutes" value={sendMenit} onChange={(e) => setSendMenit(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                   <input className="input" inputMode="numeric" placeholder="seconds" value={sendDetik} onChange={(e) => setSendDetik(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                 </div>
-                <div className="previewWaktu">{previewSend.teks}</div>
 
                 <div className="fieldLabel">Phone Number</div>
                 <input className="input" placeholder="08xx / 62xx" value={sendNomor} onChange={(e) => setSendNomor(e.target.value)} />

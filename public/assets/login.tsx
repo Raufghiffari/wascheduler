@@ -24,6 +24,7 @@ function LoginApp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(() => cekViewportMobile());
   const [view, setView] = useState<LoginView>(() => (cekViewportMobile() ? 'intro' : 'signin'));
+  const [heroImageBroken, setHeroImageBroken] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -65,6 +66,8 @@ function LoginApp(): React.JSX.Element {
     [reduceMotion],
   );
 
+  const heroImageSrc = '/assets/auth-hero.svg?v=2';
+
   async function aksiMasuk(): Promise<void> {
     const user = username.trim();
     const pass = password;
@@ -105,7 +108,18 @@ function LoginApp(): React.JSX.Element {
       >
         <section className="auth-card auth-card--login">
           <aside className="auth-desktop-hero" aria-hidden="true">
-            <img src="/assets/auth-hero.svg" alt="" className="auth-desktop-hero-image" />
+            {heroImageBroken ? (
+              <div className="auth-hero-fallback" aria-hidden="true">
+                <span>N</span>
+              </div>
+            ) : (
+              <img
+                src={heroImageSrc}
+                alt=""
+                className="auth-desktop-hero-image"
+                onError={() => setHeroImageBroken(true)}
+              />
+            )}
             <h2 className="auth-desktop-hero-title">Welcome to Nchat</h2>
             <p className="auth-desktop-hero-subtitle">Need schedule your message or status? Start from here.</p>
             <div className="auth-dots auth-dots--desktop">
@@ -126,10 +140,23 @@ function LoginApp(): React.JSX.Element {
                 transition={spring}
               >
                 <div className="auth-intro-main">
-                  <img src="/assets/auth-hero.svg" alt="Welcome illustration" className="auth-intro-image" />
+                  {heroImageBroken ? (
+                    <div className="auth-hero-fallback auth-hero-fallback--intro" aria-hidden="true">
+                      <span>N</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={heroImageSrc}
+                      alt=""
+                      className="auth-intro-image"
+                      aria-hidden="true"
+                      onError={() => setHeroImageBroken(true)}
+                    />
+                  )}
                   <div className="auth-intro-copy">
+                    <p className="auth-brand">Nchat</p>
                     <h1 className="auth-intro-title">Welcome to Nchat</h1>
-                    <p className="auth-intro-subtitle">Need Schedule Your Message Or Status? Get Started Here!</p>
+                    <p className="auth-intro-subtitle">Need schedule your message or status? Get started here.</p>
                     <div className="auth-dots">
                       <span className="auth-dot" />
                       <span className="auth-dot is-active" />
@@ -171,6 +198,7 @@ function LoginApp(): React.JSX.Element {
                       </svg>
                     </button>
                   ) : null}
+                  <span className="auth-brand auth-brand--inline">Nchat</span>
                 </div>
 
                 <h1 className="auth-heading">
@@ -198,7 +226,7 @@ function LoginApp(): React.JSX.Element {
                     </span>
                     <input
                       id="login-username"
-                      placeholder="Enter The Username"
+                      placeholder="Enter your username"
                       autoComplete="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -218,7 +246,7 @@ function LoginApp(): React.JSX.Element {
                     </span>
                     <input
                       id="login-password"
-                      placeholder="Enter The Password"
+                      placeholder="Enter your password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
                       value={password}
@@ -257,14 +285,14 @@ function LoginApp(): React.JSX.Element {
                   <div className="auth-mobile-footer auth-mobile-footer--signin">
                     <motion.button
                       type="submit"
-                      className="auth-btn auth-btn--dark auth-btn--primary"
+                      className="auth-btn auth-btn--accent auth-btn--primary"
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                       disabled={loading}
                     >
                       {loading ? 'Logging In...' : 'Login'}
                     </motion.button>
                     <p className="auth-switch-copy">
-                      Not Have An Account?{' '}
+                      Don't have an account?{' '}
                       <a href="/register" className="auth-switch-link">
                         Sign Up
                       </a>

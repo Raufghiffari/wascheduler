@@ -1,81 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="360" viewBox="0 0 420 360" fill="none">
-  <defs>
-    <linearGradient id="skinA" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f7c3a2"/>
-      <stop offset="1" stop-color="#efaa84"/>
-    </linearGradient>
-    <linearGradient id="shirtA" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f9fbfd"/>
-      <stop offset="1" stop-color="#eceff4"/>
-    </linearGradient>
-    <linearGradient id="pantsA" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#89bab1"/>
-      <stop offset="1" stop-color="#5d958b"/>
-    </linearGradient>
-    <linearGradient id="pantsB" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f4ce78"/>
-      <stop offset="1" stop-color="#e7ad4d"/>
-    </linearGradient>
-    <linearGradient id="pantsC" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#8fc2b8"/>
-      <stop offset="1" stop-color="#5e9c90"/>
-    </linearGradient>
-    <filter id="shadow" x="52" y="72" width="316" height="254" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-      <feOffset dy="8"/>
-      <feGaussianBlur stdDeviation="10"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.129412 0 0 0 0 0.192157 0 0 0 0 0.227451 0 0 0 0.14 0"/>
-      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
-      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
-    </filter>
-  </defs>
+  <rect width="420" height="360" fill="transparent"/>
+  <ellipse cx="210" cy="320" rx="128" ry="18" fill="#d7dde2"/>
 
-  <ellipse cx="210" cy="322" rx="126" ry="16" fill="#cfd8dc" fill-opacity="0.35"/>
+  <g>
+    <circle cx="130" cy="110" r="22" fill="#efb391"/>
+    <rect x="102" y="132" width="56" height="76" rx="24" fill="#f4f7fb"/>
+    <rect x="108" y="206" width="20" height="88" rx="10" fill="#7fb4a8"/>
+    <rect x="132" y="206" width="20" height="88" rx="10" fill="#6ca194"/>
+    <rect x="106" y="292" width="24" height="10" rx="5" fill="#595d63"/>
+    <rect x="130" y="292" width="24" height="10" rx="5" fill="#595d63"/>
+    <rect x="94" y="140" width="16" height="60" rx="8" transform="rotate(18 94 140)" fill="#efb391"/>
+    <rect x="158" y="140" width="16" height="60" rx="8" transform="rotate(-20 158 140)" fill="#efb391"/>
+    <path d="M91 173c-12 4-20 15-22 29l20 6c2-8 6-13 14-17l-12-18z" fill="#6ea89c"/>
+  </g>
 
-  <g filter="url(#shadow)">
-    <g transform="translate(84 90)">
-      <circle cx="42" cy="28" r="20" fill="url(#skinA)"/>
-      <path d="M24 50C24 39 33 30 44 30H52C63 30 72 39 72 50V108H24V50Z" fill="url(#shirtA)"/>
-      <path d="M28 106H49V188C49 200 39 210 28 210C17 210 8 200 8 188V126C8 115 17 106 28 106Z" fill="url(#pantsA)"/>
-      <path d="M46 106H66C77 106 86 115 86 126V188C86 200 77 210 66 210C55 210 46 200 46 188V106Z" fill="url(#pantsA)"/>
-      <rect x="9" y="204" width="24" height="10" rx="5" fill="#5c5f63"/>
-      <rect x="58" y="204" width="24" height="10" rx="5" fill="#5c5f63"/>
-      <path d="M24 58L9 102C7 107 9 112 14 113C18 114 22 112 24 108L36 83L24 58Z" fill="url(#shirtA)"/>
-      <path d="M73 56L88 18C90 12 95 9 100 12C104 14 106 19 104 24L89 67L73 56Z" fill="url(#skinA)"/>
-      <path d="M100 8L108 4L112 20L104 24L100 8Z" fill="#f2a477"/>
-      <path d="M2 108C0 91 3 75 14 66L27 78C19 86 17 98 19 110L2 108Z" fill="#6ea799"/>
-      <path d="M2 108L18 112L15 162L0 159L2 108Z" fill="#5c8f84"/>
-    </g>
+  <g>
+    <circle cx="210" cy="104" r="24" fill="#efb391"/>
+    <rect x="178" y="128" width="64" height="82" rx="26" fill="#f7f9fc"/>
+    <rect x="184" y="208" width="22" height="94" rx="11" fill="#f1c36a"/>
+    <rect x="214" y="208" width="22" height="94" rx="11" fill="#8dc0b4"/>
+    <rect x="182" y="300" width="26" height="10" rx="5" fill="#555b62"/>
+    <rect x="212" y="300" width="26" height="10" rx="5" fill="#555b62"/>
+    <rect x="166" y="138" width="16" height="60" rx="8" transform="rotate(14 166 138)" fill="#efb391"/>
+    <rect x="242" y="132" width="16" height="66" rx="8" transform="rotate(-18 242 132)" fill="#efb391"/>
+    <path d="M240 176c10 4 17 12 20 25l-20 6c-2-7-5-11-11-15l11-16z" fill="#6ea89c"/>
+  </g>
 
-    <g transform="translate(165 84)">
-      <circle cx="46" cy="30" r="21" fill="url(#skinA)"/>
-      <path d="M26 53C26 41 36 32 48 32H56C68 32 78 42 78 54V114H26V53Z" fill="url(#shirtA)"/>
-      <path d="M30 112H51V194C51 207 41 218 30 218C18 218 9 207 9 194V132C9 120 18 112 30 112Z" fill="url(#pantsB)"/>
-      <path d="M48 112H69C81 112 90 121 90 133V194C90 207 81 218 69 218C57 218 48 207 48 194V112Z" fill="url(#pantsA)"/>
-      <rect x="10" y="212" width="24" height="10" rx="5" fill="#5c5f63"/>
-      <rect x="60" y="212" width="24" height="10" rx="5" fill="#5c5f63"/>
-      <path d="M76 58L92 20C94 14 100 12 105 15C109 17 111 22 109 27L93 69L76 58Z" fill="url(#skinA)"/>
-      <path d="M104 10L112 7L117 23L109 27L104 10Z" fill="#f2a477"/>
-      <path d="M28 62L17 102C15 108 10 111 5 109C1 107 -1 102 1 96L13 58L28 62Z" fill="url(#skinA)"/>
-      <path d="M15 96L0 90L6 139L20 145L15 96Z" fill="#6ba79d"/>
-      <path d="M88 114C91 95 96 82 109 74L123 86C113 94 109 103 106 117L88 114Z" fill="#6ea799"/>
-      <path d="M122 85L136 92L124 146L110 138L122 85Z" fill="#5e8d89"/>
-    </g>
-
-    <g transform="translate(250 98)">
-      <circle cx="42" cy="28" r="20" fill="#9a6b54"/>
-      <circle cx="42" cy="30" r="19" fill="url(#skinA)"/>
-      <path d="M24 52C24 41 33 32 44 32H52C63 32 72 41 72 52V111H24V52Z" fill="url(#shirtA)"/>
-      <path d="M29 109H49V194C49 206 39 216 29 216C18 216 9 206 9 194V130C9 118 18 109 29 109Z" fill="url(#pantsC)"/>
-      <path d="M46 109H67C79 109 88 118 88 130V194C88 206 79 216 67 216C56 216 46 206 46 194V109Z" fill="url(#pantsC)"/>
-      <rect x="10" y="210" width="24" height="10" rx="5" fill="#4e5156"/>
-      <rect x="58" y="210" width="24" height="10" rx="5" fill="#4e5156"/>
-      <path d="M72 57L88 20C90 14 96 12 101 15C105 17 107 22 105 27L89 69L72 57Z" fill="#b46f4a"/>
-      <path d="M101 10L109 7L114 23L105 27L101 10Z" fill="#a95c38"/>
-      <path d="M17 59L4 101C2 107 5 112 10 113C14 114 18 112 20 108L32 83L17 59Z" fill="#b46f4a"/>
-      <path d="M87 112C90 95 95 82 108 74L121 85C112 93 108 102 105 116L87 112Z" fill="#e7abc7"/>
-      <path d="M120 84L134 91L124 144L110 137L120 84Z" fill="#d88fb5"/>
-    </g>
+  <g>
+    <circle cx="292" cy="116" r="21" fill="#b57a5b"/>
+    <circle cx="292" cy="118" r="19" fill="#efb391"/>
+    <rect x="266" y="138" width="52" height="72" rx="24" fill="#f7f9fc"/>
+    <rect x="272" y="208" width="20" height="90" rx="10" fill="#86bdb1"/>
+    <rect x="296" y="208" width="20" height="90" rx="10" fill="#6ea79b"/>
+    <rect x="270" y="296" width="24" height="10" rx="5" fill="#4f545b"/>
+    <rect x="294" y="296" width="24" height="10" rx="5" fill="#4f545b"/>
+    <rect x="320" y="150" width="14" height="58" rx="7" transform="rotate(-20 320 150)" fill="#b57a5b"/>
+    <path d="M321 184c14 5 24 16 28 31l-20 6c-2-8-7-14-15-18l7-19z" fill="#e6a2be"/>
   </g>
 </svg>

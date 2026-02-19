@@ -30,6 +30,8 @@ async function kirimRegister(payload: {
 
 function RegisterApp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
+  const [heroImageBroken, setHeroImageBroken] = useState(false);
+  const [showAdvancedAccess, setShowAdvancedAccess] = useState(false);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [developerAccess, setDeveloperAccess] = useState('');
@@ -58,12 +60,15 @@ function RegisterApp(): React.JSX.Element {
     [reduceMotion],
   );
 
+  const heroImageSrc = '/assets/auth-hero.svg?v=2';
+
   async function aksiRegister(): Promise<void> {
     const nama = name.trim();
     const pass = password;
     const akses = developerAccess.trim();
 
     if (!nama || !pass || !akses) {
+      if (!akses) setShowAdvancedAccess(true);
       setErrorText('Name, password, and developer access are required');
       setToast('Complete all required fields');
       return;
@@ -105,8 +110,19 @@ function RegisterApp(): React.JSX.Element {
       >
         <section className="auth-card auth-card--register">
           <aside className="auth-desktop-hero" aria-hidden="true">
-            <img src="/assets/auth-hero.svg" alt="" className="auth-desktop-hero-image" />
-            <h2 className="auth-desktop-hero-title">Let's, Create Account</h2>
+            {heroImageBroken ? (
+              <div className="auth-hero-fallback" aria-hidden="true">
+                <span>N</span>
+              </div>
+            ) : (
+              <img
+                src={heroImageSrc}
+                alt=""
+                className="auth-desktop-hero-image"
+                onError={() => setHeroImageBroken(true)}
+              />
+            )}
+            <h2 className="auth-desktop-hero-title">Let's Create an Account</h2>
             <p className="auth-desktop-hero-subtitle">Create your account then continue to authorize your WhatsApp.</p>
             <div className="auth-dots auth-dots--desktop">
               <span className="auth-dot" />
@@ -134,12 +150,13 @@ function RegisterApp(): React.JSX.Element {
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
               </button>
+              <span className="auth-brand auth-brand--inline">Nchat</span>
             </div>
 
             <h1 className="auth-heading auth-heading--register">
-              Let's, Create
+              Let's Create
               <br />
-              Account
+              an Account
             </h1>
 
             <form
@@ -162,7 +179,7 @@ function RegisterApp(): React.JSX.Element {
                 </span>
                 <input
                   id="register-name"
-                  placeholder="Enter Your Username"
+                  placeholder="Enter your username"
                   autoComplete="username"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -212,47 +229,62 @@ function RegisterApp(): React.JSX.Element {
                 </button>
               </div>
 
-              <label htmlFor="register-access" className="auth-visually-hidden">
-                Developer access code
-              </label>
-              <div className="auth-input-shell">
-                <span className="auth-input-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="5" y="11" width="14" height="10" rx="5" />
-                    <path d="M8 11V8a4 4 0 118 0v3" />
-                  </svg>
-                </span>
-                <input
-                  id="register-access"
-                  placeholder="Enter Developer Access Code"
-                  type={showDeveloperAccess ? 'text' : 'password'}
-                  autoComplete="one-time-code"
-                  value={developerAccess}
-                  onChange={(e) => setDeveloperAccess(e.target.value)}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  className="auth-eye-btn"
-                  onClick={() => setShowDeveloperAccess((prev) => !prev)}
-                  aria-label={showDeveloperAccess ? 'Hide access code' : 'Show access code'}
-                  disabled={loading}
-                >
-                  {showDeveloperAccess ? (
-                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 3l18 18" />
-                      <path d="M10.6 10.6a3 3 0 004.2 4.2" />
-                      <path d="M9.9 5.2A10.7 10.7 0 0112 5c5.5 0 9.4 3.4 10.8 7-0.6 1.6-1.7 3.1-3.2 4.3" />
-                      <path d="M6.4 6.4C4.4 7.7 3 9.7 2.2 12c1.4 3.6 5.3 7 10.8 7 1.3 0 2.5-0.2 3.6-0.6" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2.2 12C3.6 8.4 7.5 5 13 5s9.4 3.4 10.8 7c-1.4 3.6-5.3 7-10.8 7S3.6 15.6 2.2 12z" />
-                      <circle cx="13" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
+              <button
+                type="button"
+                className="auth-advanced-toggle"
+                onClick={() => setShowAdvancedAccess((prev) => !prev)}
+                aria-expanded={showAdvancedAccess}
+              >
+                Advanced Options
+              </button>
+
+              {showAdvancedAccess ? (
+                <>
+                  <label htmlFor="register-access" className="auth-visually-hidden">
+                    Developer access code
+                  </label>
+                  <div className="auth-input-shell auth-input-shell--advanced">
+                    <span className="auth-input-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="5" y="11" width="14" height="10" rx="5" />
+                        <path d="M8 11V8a4 4 0 118 0v3" />
+                      </svg>
+                    </span>
+                    <input
+                      id="register-access"
+                      placeholder="Enter developer access code"
+                      type={showDeveloperAccess ? 'text' : 'password'}
+                      autoComplete="one-time-code"
+                      value={developerAccess}
+                      onChange={(e) => setDeveloperAccess(e.target.value)}
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="auth-eye-btn"
+                      onClick={() => setShowDeveloperAccess((prev) => !prev)}
+                      aria-label={showDeveloperAccess ? 'Hide access code' : 'Show access code'}
+                      disabled={loading}
+                    >
+                      {showDeveloperAccess ? (
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 3l18 18" />
+                          <path d="M10.6 10.6a3 3 0 004.2 4.2" />
+                          <path d="M9.9 5.2A10.7 10.7 0 0112 5c5.5 0 9.4 3.4 10.8 7-0.6 1.6-1.7 3.1-3.2 4.3" />
+                          <path d="M6.4 6.4C4.4 7.7 3 9.7 2.2 12c1.4 3.6 5.3 7 10.8 7 1.3 0 2.5-0.2 3.6-0.6" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2.2 12C3.6 8.4 7.5 5 13 5s9.4 3.4 10.8 7c-1.4 3.6-5.3 7-10.8 7S3.6 15.6 2.2 12z" />
+                          <circle cx="13" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="auth-advanced-hint">Developer access code is required by admin.</p>
+              )}
 
               <p className="auth-error">{errorText}</p>
 
@@ -265,11 +297,10 @@ function RegisterApp(): React.JSX.Element {
                 >
                   {loading ? 'Creating...' : 'Create Account'}
                 </motion.button>
-                <p className="auth-muted-copy">Or Continue with</p>
                 <p className="auth-switch-copy">
-                  Already have an Account!{' '}
+                  Already have an account?{' '}
                   <a href="/login" className="auth-switch-link">
-                    Sign-In
+                    Sign In
                   </a>
                 </p>
               </div>
