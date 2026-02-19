@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
 
+type LoginView = 'intro' | 'signin';
 type ResLogin = { ok: boolean; nextRoute?: string; pesan?: string };
+
+function cekViewportMobile(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(max-width: 820px)').matches;
+}
 
 async function kirimLogin(username: string, password: string): Promise<ResLogin> {
   const res = await fetch('/api/login', {
@@ -16,8 +22,11 @@ async function kirimLogin(username: string, password: string): Promise<ResLogin>
 
 function LoginApp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(() => cekViewportMobile());
+  const [view, setView] = useState<LoginView>(() => (cekViewportMobile() ? 'intro' : 'signin'));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [toast, setToast] = useState('');
@@ -27,6 +36,21 @@ function LoginApp(): React.JSX.Element {
     const t = window.setTimeout(() => setToast(''), 1700);
     return () => window.clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const media = window.matchMedia('(max-width: 820px)');
+    const sync = (): void => {
+      const mobile = media.matches;
+      setIsMobile(mobile);
+      setView(mobile ? 'intro' : 'signin');
+    };
+
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   const spring = useMemo(
     () =>
@@ -72,93 +96,193 @@ function LoginApp(): React.JSX.Element {
   }
 
   return (
-    <div className="appShell">
+    <div className="auth-shell auth-shell--login">
       <motion.main
-        className="appContainer appContainerLogin"
-        initial={reduceMotion ? undefined : { opacity: 0, filter: 'blur(12px)', y: 20 }}
-        animate={reduceMotion ? undefined : { opacity: 1, filter: 'blur(0px)', y: 0 }}
+        className="auth-stage"
+        initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={spring}
       >
-        <motion.section className="surfaceCard heroCard" layout transition={spring}>
-          <p className="heroTag">Nobodyzz</p>
-          <h1 className="heroTitle">Welcome</h1>
-          <p className="heroSubtitle">Sign In First</p>
-          <div className="heroActions">
-          </div>
-        </motion.section>
+        <section className="auth-card auth-card--login">
+          <aside className="auth-desktop-hero" aria-hidden="true">
+            <img src="/assets/auth-hero.svg" alt="" className="auth-desktop-hero-image" />
+            <h2 className="auth-desktop-hero-title">Welcome to Nchat</h2>
+            <p className="auth-desktop-hero-subtitle">Need schedule your message or status? Start from here.</p>
+            <div className="auth-dots auth-dots--desktop">
+              <span className="auth-dot" />
+              <span className="auth-dot is-active" />
+              <span className="auth-dot" />
+            </div>
+          </aside>
 
-        <motion.section
-          className="surfaceCard loginPanel"
-          initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: reduceMotion ? 0 : 0.08 }}
-        >
-          <label className="fieldLabel" htmlFor="username">
-            Username
-          </label>
-          <input
-            id="username"
-            className="input"
-            placeholder="admin"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            {view === 'intro' ? (
+              <motion.section
+                key="intro"
+                className="auth-screen auth-screen--intro"
+                initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
+                animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
+                transition={spring}
+              >
+                <div className="auth-intro-main">
+                  <img src="/assets/auth-hero.svg" alt="Welcome illustration" className="auth-intro-image" />
+                  <div className="auth-intro-copy">
+                    <h1 className="auth-intro-title">Welcome to Nchat</h1>
+                    <p className="auth-intro-subtitle">Need Schedule Your Message Or Status? Get Started Here!</p>
+                    <div className="auth-dots">
+                      <span className="auth-dot" />
+                      <span className="auth-dot is-active" />
+                      <span className="auth-dot" />
+                    </div>
+                  </div>
+                </div>
 
-          <label className="fieldLabel" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            className="input"
-            placeholder="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void aksiMasuk();
-            }}
-          />
+                <div className="auth-mobile-footer auth-mobile-footer--intro">
+                  <motion.button
+                    type="button"
+                    className="auth-btn auth-btn--accent auth-btn--primary"
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                    onClick={() => setView('signin')}
+                  >
+                    Get Started
+                  </motion.button>
+                </div>
+              </motion.section>
+            ) : (
+              <motion.section
+                key="signin"
+                className="auth-screen auth-screen--signin"
+                initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
+                animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
+                transition={spring}
+              >
+                <div className="auth-topbar">
+                  {isMobile ? (
+                    <button
+                      type="button"
+                      className="auth-back-btn"
+                      aria-label="Back to intro"
+                      onClick={() => setView('intro')}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                  ) : null}
+                </div>
 
-          <div className="spacer12" />
+                <h1 className="auth-heading">
+                  Hey,
+                  <br />
+                  Welcome Back
+                </h1>
 
-          <motion.button
-            type="button"
-            className="btn btnPrimary btnWide"
-            onClick={() => void aksiMasuk()}
-            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-            disabled={loading}
-          >
-            {loading ? 'Signing in' : 'Sign in'}
-          </motion.button>
+                <form
+                  className="auth-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void aksiMasuk();
+                  }}
+                >
+                  <label htmlFor="login-username" className="auth-visually-hidden">
+                    Username
+                  </label>
+                  <div className="auth-input-shell">
+                    <span className="auth-input-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="5" width="18" height="14" rx="3" />
+                        <path d="M3 9l9 5 9-5" />
+                      </svg>
+                    </span>
+                    <input
+                      id="login-username"
+                      placeholder="Enter The Username"
+                      autoComplete="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
 
-          <div className="spacer12" />
+                  <label htmlFor="login-password" className="auth-visually-hidden">
+                    Password
+                  </label>
+                  <div className="auth-input-shell">
+                    <span className="auth-input-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="5" y="11" width="14" height="10" rx="5" />
+                        <path d="M8 11V8a4 4 0 118 0v3" />
+                      </svg>
+                    </span>
+                    <input
+                      id="login-password"
+                      placeholder="Enter The Password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      className="auth-eye-btn"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      disabled={loading}
+                    >
+                      {showPassword ? (
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 3l18 18" />
+                          <path d="M10.6 10.6a3 3 0 004.2 4.2" />
+                          <path d="M9.9 5.2A10.7 10.7 0 0112 5c5.5 0 9.4 3.4 10.8 7-0.6 1.6-1.7 3.1-3.2 4.3" />
+                          <path d="M6.4 6.4C4.4 7.7 3 9.7 2.2 12c1.4 3.6 5.3 7 10.8 7 1.3 0 2.5-0.2 3.6-0.6" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2.2 12C3.6 8.4 7.5 5 13 5s9.4 3.4 10.8 7c-1.4 3.6-5.3 7-10.8 7S3.6 15.6 2.2 12z" />
+                          <circle cx="13" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
 
-          <motion.button
-            type="button"
-            className="btn btnGhost btnWide"
-            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-            onClick={() => {
-              window.location.href = '/register';
-            }}
-            disabled={loading}
-          >
-            Register
-          </motion.button>
+                  <button type="button" className="auth-forgot-link" aria-disabled="true" disabled>
+                    Forgot Password?
+                  </button>
 
-          <p className="dangerText">{errorText}</p>
-        </motion.section>
+                  <p className="auth-error">{errorText}</p>
 
-        <p className="metaText footerNote">Don't Have Account? Register First</p>
+                  <div className="auth-mobile-footer auth-mobile-footer--signin">
+                    <motion.button
+                      type="submit"
+                      className="auth-btn auth-btn--dark auth-btn--primary"
+                      whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                      disabled={loading}
+                    >
+                      {loading ? 'Logging In...' : 'Login'}
+                    </motion.button>
+                    <p className="auth-switch-copy">
+                      Not Have An Account?{' '}
+                      <a href="/register" className="auth-switch-link">
+                        Sign Up
+                      </a>
+                    </p>
+                  </div>
+                </form>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        </section>
       </motion.main>
 
       <AnimatePresence>
         {toast ? (
           <motion.div
-            className="toast"
-            initial={reduceMotion ? undefined : { opacity: 0, y: 16, filter: 'blur(8px)' }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+            className="auth-toast"
+            initial={reduceMotion ? undefined : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: 12 }}
             transition={spring}
           >

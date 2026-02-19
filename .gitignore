@@ -2,3 +2,5 @@ node_modules/
 package-lock.json
 dist/
 public/assets/*.js
+db/
+!db

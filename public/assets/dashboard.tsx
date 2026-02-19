@@ -723,21 +723,6 @@ function DashboardApp(): React.JSX.Element {
               type="button"
               className="btn btnGhost btnCompact btnTopControl"
               whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              onClick={() => {
-                setToast('Refreshing');
-                void muatSemua();
-              }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-                <path d="M21 3v7h-7" />
-              </svg>
-              Refresh
-            </motion.button>
-            <motion.button
-              type="button"
-              className="btn btnGhost btnCompact btnTopControl"
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
               onClick={() => void kirimLogout().finally(() => redirectTop('/'))}
             >
               Logout

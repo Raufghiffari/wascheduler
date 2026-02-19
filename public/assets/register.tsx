@@ -33,7 +33,8 @@ function RegisterApp(): React.JSX.Element {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [developerAccess, setDeveloperAccess] = useState('');
-  const [encryptor, setEncryptor] = useState(() => buatEncryptorAcak());
+  const [showPassword, setShowPassword] = useState(false);
+  const [showDeveloperAccess, setShowDeveloperAccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [toast, setToast] = useState('');
@@ -61,7 +62,6 @@ function RegisterApp(): React.JSX.Element {
     const nama = name.trim();
     const pass = password;
     const akses = developerAccess.trim();
-    const enc = encryptor.trim();
 
     if (!nama || !pass || !akses) {
       setErrorText('Name, password, and developer access are required');
@@ -76,7 +76,7 @@ function RegisterApp(): React.JSX.Element {
         name: nama,
         password: pass,
         developerAccess: akses,
-        encryptor: enc || buatEncryptorAcak(),
+        encryptor: buatEncryptorAcak(),
       });
 
       if (!hasil.ok) {
@@ -96,119 +96,194 @@ function RegisterApp(): React.JSX.Element {
   }
 
   return (
-    <div className="appShell">
+    <div className="auth-shell auth-shell--register">
       <motion.main
-        className="appContainer appContainerLogin"
-        initial={reduceMotion ? undefined : { opacity: 0, filter: 'blur(12px)', y: 20 }}
-        animate={reduceMotion ? undefined : { opacity: 1, filter: 'blur(0px)', y: 0 }}
+        className="auth-stage"
+        initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
+        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
         transition={spring}
       >
-        <motion.section className="surfaceCard heroCard" layout transition={spring}>
-          <p className="heroTag">WA Status Scheduler</p>
-          <h1 className="heroTitle">Register</h1>
-          <p className="heroSubtitle">Create new user agent account with developer access code</p>
-        </motion.section>
+        <section className="auth-card auth-card--register">
+          <aside className="auth-desktop-hero" aria-hidden="true">
+            <img src="/assets/auth-hero.svg" alt="" className="auth-desktop-hero-image" />
+            <h2 className="auth-desktop-hero-title">Let's, Create Account</h2>
+            <p className="auth-desktop-hero-subtitle">Create your account then continue to authorize your WhatsApp.</p>
+            <div className="auth-dots auth-dots--desktop">
+              <span className="auth-dot" />
+              <span className="auth-dot" />
+              <span className="auth-dot is-active" />
+            </div>
+          </aside>
 
-        <motion.section
-          className="surfaceCard loginPanel"
-          initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ ...spring, delay: reduceMotion ? 0 : 0.08 }}
-        >
-          <label className="fieldLabel" htmlFor="name">
-            Name Of User
-          </label>
-          <input
-            id="name"
-            className="input"
-            placeholder="new-user"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <motion.section
+            className="auth-screen auth-screen--register"
+            initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={spring}
+          >
+            <div className="auth-topbar">
+              <button
+                type="button"
+                className="auth-back-btn"
+                aria-label="Back to login"
+                onClick={() => {
+                  window.location.href = '/login';
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+            </div>
 
-          <label className="fieldLabel" htmlFor="encryptor">
-            User Encryptor
-          </label>
-          <div className="row rowNoWrap">
-            <input
-              id="encryptor"
-              className="input"
-              placeholder="S!67sX1bb0X81244nshSx"
-              value={encryptor}
-              onChange={(e) => setEncryptor(e.target.value)}
-            />
-            <motion.button
-              type="button"
-              className="btn btnGhost btnCompact"
-              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              onClick={() => setEncryptor(buatEncryptorAcak())}
-              disabled={loading}
+            <h1 className="auth-heading auth-heading--register">
+              Let's, Create
+              <br />
+              Account
+            </h1>
+
+            <form
+              className="auth-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void aksiRegister();
+              }}
             >
-              Random
-            </motion.button>
-          </div>
+              <label htmlFor="register-name" className="auth-visually-hidden">
+                Username
+              </label>
+              <div className="auth-input-shell">
+                <span className="auth-input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20a8 8 0 0116 0" />
+                    <circle cx="18.5" cy="5.5" r="2.4" />
+                  </svg>
+                </span>
+                <input
+                  id="register-name"
+                  placeholder="Enter Your Username"
+                  autoComplete="username"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
 
-          <label className="fieldLabel" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            className="input"
-            placeholder="password"
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+              <label htmlFor="register-password" className="auth-visually-hidden">
+                Password
+              </label>
+              <div className="auth-input-shell">
+                <span className="auth-input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="5" y="11" width="14" height="10" rx="5" />
+                    <path d="M8 11V8a4 4 0 118 0v3" />
+                  </svg>
+                </span>
+                <input
+                  id="register-password"
+                  placeholder="Enter your password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="auth-eye-btn"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  disabled={loading}
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 10.6a3 3 0 004.2 4.2" />
+                      <path d="M9.9 5.2A10.7 10.7 0 0112 5c5.5 0 9.4 3.4 10.8 7-0.6 1.6-1.7 3.1-3.2 4.3" />
+                      <path d="M6.4 6.4C4.4 7.7 3 9.7 2.2 12c1.4 3.6 5.3 7 10.8 7 1.3 0 2.5-0.2 3.6-0.6" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2.2 12C3.6 8.4 7.5 5 13 5s9.4 3.4 10.8 7c-1.4 3.6-5.3 7-10.8 7S3.6 15.6 2.2 12z" />
+                      <circle cx="13" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
 
-          <label className="fieldLabel" htmlFor="developerAccess">
-            Developer Access
-          </label>
-          <input
-            id="developerAccess"
-            className="input"
-            placeholder="access code from .env"
-            value={developerAccess}
-            onChange={(e) => setDeveloperAccess(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void aksiRegister();
-            }}
-          />
+              <label htmlFor="register-access" className="auth-visually-hidden">
+                Developer access code
+              </label>
+              <div className="auth-input-shell">
+                <span className="auth-input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="5" y="11" width="14" height="10" rx="5" />
+                    <path d="M8 11V8a4 4 0 118 0v3" />
+                  </svg>
+                </span>
+                <input
+                  id="register-access"
+                  placeholder="Enter Developer Access Code"
+                  type={showDeveloperAccess ? 'text' : 'password'}
+                  autoComplete="one-time-code"
+                  value={developerAccess}
+                  onChange={(e) => setDeveloperAccess(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="auth-eye-btn"
+                  onClick={() => setShowDeveloperAccess((prev) => !prev)}
+                  aria-label={showDeveloperAccess ? 'Hide access code' : 'Show access code'}
+                  disabled={loading}
+                >
+                  {showDeveloperAccess ? (
+                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 3l18 18" />
+                      <path d="M10.6 10.6a3 3 0 004.2 4.2" />
+                      <path d="M9.9 5.2A10.7 10.7 0 0112 5c5.5 0 9.4 3.4 10.8 7-0.6 1.6-1.7 3.1-3.2 4.3" />
+                      <path d="M6.4 6.4C4.4 7.7 3 9.7 2.2 12c1.4 3.6 5.3 7 10.8 7 1.3 0 2.5-0.2 3.6-0.6" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2.2 12C3.6 8.4 7.5 5 13 5s9.4 3.4 10.8 7c-1.4 3.6-5.3 7-10.8 7S3.6 15.6 2.2 12z" />
+                      <circle cx="13" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
 
-          <div className="spacer12" />
-          <motion.button
-            type="button"
-            className="btn btnPrimary btnWide"
-            onClick={() => void aksiRegister()}
-            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-            disabled={loading}
-          >
-            {loading ? 'Registering' : 'Register Now'}
-          </motion.button>
+              <p className="auth-error">{errorText}</p>
 
-          <div className="spacer12" />
-          <motion.button
-            type="button"
-            className="btn btnGhost btnWide"
-            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-            onClick={() => {
-              window.location.href = '/login';
-            }}
-            disabled={loading}
-          >
-            Back to Login
-          </motion.button>
-
-          <p className="dangerText">{errorText}</p>
-        </motion.section>
+              <div className="auth-mobile-footer auth-mobile-footer--register">
+                <motion.button
+                  type="submit"
+                  className="auth-btn auth-btn--accent auth-btn--primary"
+                  whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Creating...' : 'Create Account'}
+                </motion.button>
+                <p className="auth-muted-copy">Or Continue with</p>
+                <p className="auth-switch-copy">
+                  Already have an Account!{' '}
+                  <a href="/login" className="auth-switch-link">
+                    Sign-In
+                  </a>
+                </p>
+              </div>
+            </form>
+          </motion.section>
+        </section>
       </motion.main>
 
       <AnimatePresence>
         {toast ? (
           <motion.div
-            className="toast"
-            initial={reduceMotion ? undefined : { opacity: 0, y: 16, filter: 'blur(8px)' }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0, filter: 'blur(0px)' }}
+            className="auth-toast"
+            initial={reduceMotion ? undefined : { opacity: 0, y: 12 }}
+            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: 12 }}
             transition={spring}
           >
