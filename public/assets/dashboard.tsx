@@ -136,6 +136,30 @@ function normalisasiAngka(v: string, maks: number): number {
   return Math.max(0, Math.min(maks, Math.floor(angka)));
 }
 
+function hitungPreviewWaktuKirim(durasi: { jam: number; menit: number; detik: number }, nowMs: number): string | null {
+  const totalDetik = durasi.jam * 3600 + durasi.menit * 60 + durasi.detik;
+  if (totalDetik <= 0) return null;
+
+  const now = new Date(nowMs);
+  const target = new Date(nowMs + totalDetik * 1000);
+  const jamMenitDetik = target.toLocaleTimeString('en-GB', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
+  const awalHariNow = new Date(now);
+  awalHariNow.setHours(0, 0, 0, 0);
+  const awalHariTarget = new Date(target);
+  awalHariTarget.setHours(0, 0, 0, 0);
+  const dayOffset = Math.round((awalHariTarget.getTime() - awalHariNow.getTime()) / 86_400_000);
+
+  if (dayOffset <= 0) return `Will be send at ${jamMenitDetik}`;
+  if (dayOffset === 1) return `Will be send at ${jamMenitDetik} tomorrow`;
+  return `Will be send at ${jamMenitDetik} in ${dayOffset} days`;
+}
+
 function buatIdBlok(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 }
@@ -406,6 +430,20 @@ function DashboardApp(): React.JSX.Element {
       placeholder: '62812xxxx 62813xxxx',
     };
   }, [audienceTipe]);
+
+  const previewStatusAt = useMemo(() => {
+    const jam = normalisasiAngka(durasiJam, 999);
+    const menit = normalisasiAngka(durasiMenit, 59);
+    const detik = normalisasiAngka(durasiDetik, 59);
+    return hitungPreviewWaktuKirim({ jam, menit, detik }, nowMs);
+  }, [durasiJam, durasiMenit, durasiDetik, nowMs]);
+
+  const previewSendAt = useMemo(() => {
+    const jam = normalisasiAngka(sendJam, 999);
+    const menit = normalisasiAngka(sendMenit, 59);
+    const detik = normalisasiAngka(sendDetik, 59);
+    return hitungPreviewWaktuKirim({ jam, menit, detik }, nowMs);
+  }, [sendJam, sendMenit, sendDetik, nowMs]);
 
   async function muatSemua(): Promise<void> {
     const [hasilWa, hasilJobs, hasilSession] = await Promise.allSettled([
@@ -768,6 +806,7 @@ function DashboardApp(): React.JSX.Element {
                   <input className="input" inputMode="numeric" placeholder="minutes" value={durasiMenit} onChange={(e) => setDurasiMenit(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                   <input className="input" inputMode="numeric" placeholder="seconds" value={durasiDetik} onChange={(e) => setDurasiDetik(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                 </div>
+                {previewStatusAt ? <div className="sendAtPreview" role="status" aria-live="polite">{previewStatusAt}</div> : null}
 
                 <div className="fieldLabel">Type</div>
                 <select className="select" value="wa_status" disabled><option value="wa_status">WA Status</option></select>
@@ -843,6 +882,7 @@ function DashboardApp(): React.JSX.Element {
                   <input className="input" inputMode="numeric" placeholder="minutes" value={sendMenit} onChange={(e) => setSendMenit(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                   <input className="input" inputMode="numeric" placeholder="seconds" value={sendDetik} onChange={(e) => setSendDetik(e.target.value.replace(/\D/g, '').slice(0, 2))} />
                 </div>
+                {previewSendAt ? <div className="sendAtPreview" role="status" aria-live="polite">{previewSendAt}</div> : null}
 
                 <div className="fieldLabel">Phone Number</div>
                 <input className="input" placeholder="08xx / 62xx" value={sendNomor} onChange={(e) => setSendNomor(e.target.value)} />
