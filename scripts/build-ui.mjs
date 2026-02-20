@@ -6,7 +6,7 @@ import process from 'process';
 const akar = process.cwd();
 const dirAset = path.join(akar, 'public', 'assets');
 
-async function hapusAsetJsLama() {
+async function hpsastjslama() {
   const daftar = await readdir(dirAset);
   await Promise.all(
     daftar
@@ -15,7 +15,7 @@ async function hapusAsetJsLama() {
   );
 }
 
-async function setScriptHtml(relHtml, namaJs) {
+async function setscrpthtml(relHtml, namaJs) {
   const file = path.join(akar, relHtml);
   let html = await readFile(file, 'utf8');
 
@@ -27,7 +27,7 @@ async function setScriptHtml(relHtml, namaJs) {
   await writeFile(file, html, 'utf8');
 }
 
-async function bangunSatu(entryRel, namaOut) {
+async function bngnsatu(entryRel, namaOut) {
   const entry = path.join(akar, entryRel);
   const hasil = await build({
     entryPoints: [entry],
@@ -50,9 +50,8 @@ async function bangunSatu(entryRel, namaOut) {
   return namaOut;
 }
 
-async function mulaiBuild() {
-  // Fungsi ini menjalankan build untuk semua file UI.
-  await hapusAsetJsLama();
+async function mulaibld() {
+  await hpsastjslama();
 
   const target = [
     { entry: 'public/assets/login.tsx', out: 'login.js', html: 'public/login.html' },
@@ -63,15 +62,15 @@ async function mulaiBuild() {
 
   const hasil = [];
   for (const item of target) {
-    const namaJs = await bangunSatu(item.entry, item.out);
-    await setScriptHtml(item.html, namaJs);
+    const namaJs = await bngnsatu(item.entry, item.out);
+    await setscrpthtml(item.html, namaJs);
     hasil.push(`${item.out}`);
   }
 
   console.log(`[build-ui] selesai (${hasil.join(', ')})`);
 }
 
-mulaiBuild().catch((err) => {
+mulaibld().catch((err) => {
   console.error('[build-ui] gagal:', err);
   process.exit(1);
 });

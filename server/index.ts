@@ -1,5 +1,3 @@
-// server/index.ts
-// Entrypoint Express untuk dashboard lokal.
 
 import 'dotenv/config';
 import express from 'express';
@@ -8,15 +6,15 @@ import helmet from 'helmet';
 import path from 'path';
 
 import {
-  kirimHalamanAuthorize,
-  kirimHalamanDashboard,
-  kirimHalamanLogin,
-  kirimHalamanRegister,
+  krmhlmnathrz,
+  krmhlmndshbrd,
+  krmhlmnlgn,
+  krmhlmnrgstr,
 } from './halaman';
-import { butuhLogin, tentukanRuteDariSession } from './auth';
-import { buatRouterApi } from './rute-api';
-import { DbBusyError, pastikanDatabaseAda, tambahLog } from '../db/penyimpanan';
-import { ambilGuardInstance, InstanceLockedError } from '../shared/instance-guard';
+import { bthlgn, tntknrutedarisssn } from './auth';
+import { buatrtrapi } from './rute-api';
+import { DbBusyError, pstkndtbsada, tmbhlog } from '../db/penyimpanan';
+import { amblgrdinstnc, InstanceLockedError } from '../shared/instance-guard';
 
 const port = Number(process.env.PORT || 3000);
 let sudahPasangHandlerShutdown = false;
@@ -27,21 +25,20 @@ type HandlerAsync = (
   next: express.NextFunction,
 ) => Promise<void>;
 
-function bungkusAsync(handler: HandlerAsync): express.RequestHandler {
+function bngksasync(handler: HandlerAsync): express.RequestHandler {
   return (req, res, next) => {
     void handler(req, res, next).catch(next);
   };
 }
 
-// Fungsi ini membuat instance Express + semua middleware/routes.
-export async function buatServer(): Promise<express.Express> {
-  await pastikanDatabaseAda();
+export async function buatsrvr(): Promise<express.Express> {
+  await pstkndtbsada();
 
   const app = express();
 
   app.use(
     helmet({
-      contentSecurityPolicy: false, // biar gampang untuk UI lokal (bisa diketatkan nanti)
+      contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
       crossOriginResourcePolicy: false,
       originAgentCluster: false,
@@ -83,100 +80,94 @@ export async function buatServer(): Promise<express.Express> {
     next();
   });
 
-  // Static assets UI
   app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
 
-  // Halaman
-  app.get('/', bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/', bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/login') {
-      kirimHalamanLogin(res);
+      krmhlmnlgn(res);
       return;
     }
     res.redirect(nextRoute);
   }));
 
-  app.get('/login', bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/login', bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/login') {
-      kirimHalamanLogin(res);
+      krmhlmnlgn(res);
       return;
     }
     res.redirect(nextRoute);
   }));
 
-  app.get('/login.html', bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/login.html', bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/login') {
-      kirimHalamanLogin(res);
+      krmhlmnlgn(res);
       return;
     }
     res.redirect(nextRoute);
   }));
 
-  app.get('/register', bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/register', bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/login') {
-      kirimHalamanRegister(res);
+      krmhlmnrgstr(res);
       return;
     }
     res.redirect(nextRoute);
   }));
 
-  app.get('/register.html', bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/register.html', bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/login') {
-      kirimHalamanRegister(res);
+      krmhlmnrgstr(res);
       return;
     }
     res.redirect(nextRoute);
   }));
 
-  app.get('/authorize', butuhLogin, bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/authorize', bthlgn, bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/dashboard') {
       res.redirect('/dashboard');
       return;
     }
-    kirimHalamanAuthorize(res);
+    krmhlmnathrz(res);
   }));
 
-  app.get('/authorize.html', butuhLogin, bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/authorize.html', bthlgn, bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/dashboard') {
       res.redirect('/dashboard');
       return;
     }
-    kirimHalamanAuthorize(res);
+    krmhlmnathrz(res);
   }));
 
-  app.get('/dashboard', butuhLogin, bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/dashboard', bthlgn, bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/authorize') {
       res.redirect('/authorize');
       return;
     }
-    kirimHalamanDashboard(res);
+    krmhlmndshbrd(res);
   }));
 
-  // Versi frame untuk ditaruh di belakang authorize gate.
-  // Tetap butuh login, tapi tidak redirect meski WA belum terhubung.
-  app.get('/dashboard-frame', butuhLogin, (_req, res) => kirimHalamanDashboard(res));
-  app.get('/dashboard-frame.html', butuhLogin, (_req, res) => kirimHalamanDashboard(res));
+  app.get('/dashboard-frame', bthlgn, (_req, res) => krmhlmndshbrd(res));
+  app.get('/dashboard-frame.html', bthlgn, (_req, res) => krmhlmndshbrd(res));
 
-  app.get('/dashboard.html', butuhLogin, bungkusAsync(async (req, res) => {
-    const nextRoute = await tentukanRuteDariSession(req);
+  app.get('/dashboard.html', bthlgn, bngksasync(async (req, res) => {
+    const nextRoute = await tntknrutedarisssn(req);
     if (nextRoute === '/authorize') {
       res.redirect('/authorize');
       return;
     }
-    kirimHalamanDashboard(res);
+    krmhlmndshbrd(res);
   }));
 
-  // API
-  app.use('/api', buatRouterApi());
+  app.use('/api', buatrtrapi());
 
-  // Error handler (penting untuk error upload/multer, dsb)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const pesan = err instanceof Error ? err.message : 'Terjadi error.';
@@ -186,7 +177,7 @@ export async function buatServer(): Promise<express.Express> {
 
     if (req.path.startsWith('/api/')) {
       if (err instanceof DbBusyError) {
-        void tambahLog('db_busy', {
+        void tmbhlog('db_busy', {
           proses: 'server_api',
           path: req.path,
           pesan: err.message,
@@ -202,47 +193,45 @@ export async function buatServer(): Promise<express.Express> {
     res.status(500).send('Error');
   });
 
-  // Fallback
   app.get('*', (_req, res) => res.redirect('/'));
 
   return app;
 }
 
-function pasangHandlerShutdown(aksiLepas: () => Promise<void>): void {
+function psnghndlrshtdwn(aksiLepas: () => Promise<void>): void {
   if (sudahPasangHandlerShutdown) return;
   sudahPasangHandlerShutdown = true;
 
   let sedangLepas = false;
-  const lepasSekali = async (): Promise<void> => {
+  const lpsskl = async (): Promise<void> => {
     if (sedangLepas) return;
     sedangLepas = true;
     await aksiLepas().catch(() => null);
   };
 
   process.once('SIGINT', () => {
-    void lepasSekali().finally(() => process.exit(0));
+    void lpsskl().finally(() => process.exit(0));
   });
 
   process.once('SIGTERM', () => {
-    void lepasSekali().finally(() => process.exit(0));
+    void lpsskl().finally(() => process.exit(0));
   });
 
   process.once('exit', () => {
-    void lepasSekali();
+    void lpsskl();
   });
 }
 
-// Fungsi ini menjalankan server HTTP.
-export async function jalankanServer(): Promise<void> {
+export async function jlnknsrvr(): Promise<void> {
   try {
-    const guard = await ambilGuardInstance('server');
+    const guard = await amblgrdinstnc('server');
 
-    pasangHandlerShutdown(async () => {
+    psnghndlrshtdwn(async () => {
       await guard.lepas();
     });
   } catch (err) {
     if (err instanceof InstanceLockedError) {
-      await tambahLog('instance_guard', {
+      await tmbhlog('instance_guard', {
         proses: 'server',
         status: 'ditolak',
         pesan: err.message,
@@ -251,16 +240,15 @@ export async function jalankanServer(): Promise<void> {
     throw err;
   }
 
-  const app = await buatServer();
+  const app = await buatsrvr();
   app.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`[server] jalan di http://localhost:${port}`);
   });
 }
 
-// Jalankan kalau file ini dieksekusi langsung.
 if (require.main === module) {
-  jalankanServer().catch((err) => {
+  jlnknsrvr().catch((err) => {
     // eslint-disable-next-line no-console
     console.error('[server] gagal start:', err);
     process.exit(1);

@@ -1,5 +1,3 @@
-// server/tipe-modul-eksternal.d.ts
-// Deklarasi minimal untuk modul eksternal yang belum punya tipe bawaan.
 
 declare module 'proper-lockfile' {
   export type RetryOptions = {

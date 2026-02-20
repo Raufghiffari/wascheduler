@@ -1,12 +1,9 @@
-// worker/scheduler.ts
-// Helper untuk menentukan kapan job boleh dieksekusi sesuai aturan window + retry.
 
 import type { JobScheduleWaStatus } from '../shared/tipe';
 
 export type TahapJadwal = 'belum_waktu' | 'jendela_1' | 'tunggu_10_menit' | 'jendela_2' | 'kadaluarsa';
 
-// Fungsi ini menentukan tahap schedule berdasarkan waktu sekarang.
-export function tentukanTahap(job: JobScheduleWaStatus, sekarang: number): TahapJadwal {
+export function tntknthp(job: JobScheduleWaStatus, sekarang: number): TahapJadwal {
   const { jendela1MulaiMs, jendela1AkhirMs, jendela2MulaiMs, jendela2AkhirMs } = job.jendela;
 
   if (sekarang < jendela1MulaiMs) return 'belum_waktu';
@@ -16,9 +13,8 @@ export function tentukanTahap(job: JobScheduleWaStatus, sekarang: number): Tahap
   return 'kadaluarsa';
 }
 
-// Fungsi ini mengembalikan akhir window aktif (kalau sedang dalam window).
-export function ambilAkhirWindowAktif(job: JobScheduleWaStatus, sekarang: number): number | null {
-  const tahap = tentukanTahap(job, sekarang);
+export function amblakhrwndwaktf(job: JobScheduleWaStatus, sekarang: number): number | null {
+  const tahap = tntknthp(job, sekarang);
 
   if (tahap === 'jendela_1') return job.jendela.jendela1AkhirMs;
   if (tahap === 'jendela_2') return job.jendela.jendela2AkhirMs;
@@ -26,9 +22,7 @@ export function ambilAkhirWindowAktif(job: JobScheduleWaStatus, sekarang: number
   return null;
 }
 
-// Fungsi ini menentukan kapan retry berikutnya dalam window.
-// Kalau sudah lewat akhir window, kembalikan null.
-export function hitungBerikutnyaCoba(
+export function htngbrktnycoba(
   sekarang: number,
   akhirWindow: number,
   intervalMs: number,
@@ -39,7 +33,6 @@ export function hitungBerikutnyaCoba(
   return null;
 }
 
-// Fungsi ini cek apakah job masih boleh dicoba (tidak success/cancel).
-export function jobMasihAktif(job: { status: string }): boolean {
+export function jobmshaktf(job: { status: string }): boolean {
   return job.status !== 'success' && job.status !== 'cancel';
 }

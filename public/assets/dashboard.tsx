@@ -85,18 +85,18 @@ type BlokUi =
   | { id: string; jenis: 'wait_reply'; mode: 'any' | 'exact'; expectedText: string }
   | { id: string; jenis: 'send_message'; pesan: string };
 
-function formatWaktu(ms: number): string {
+function frmtwkt(ms: number): string {
   return new Date(ms).toLocaleString('en-GB', { hour12: false });
 }
 
-function formatUkuran(byte: number): string {
+function frmtukrn(byte: number): string {
   const mb = byte / (1024 * 1024);
   if (mb >= 1) return `${mb.toFixed(1)} MB`;
   const kb = byte / 1024;
   return `${kb.toFixed(0)} KB`;
 }
 
-function pecahNomor(teks: string): string[] {
+function pchnmr(teks: string): string[] {
   const potongan = String(teks ?? '')
     .split(/[\n,;\s]+/g)
     .map((s) => s.trim())
@@ -111,12 +111,12 @@ function pecahNomor(teks: string): string[] {
   return Array.from(new Set(hasil));
 }
 
-function rapikanNomorSatu(teks: string): string | null {
-  const daftar = pecahNomor(teks);
+function rpknnmrsatu(teks: string): string | null {
+  const daftar = pchnmr(teks);
   return daftar[0] || null;
 }
 
-function formatNomorTerhubung(nomorRaw: string | null): string {
+function frmtnmrtrhbng(nomorRaw: string | null): string {
   const sumber = String(nomorRaw || '').trim();
   if (!sumber) return '-';
   const jid = sumber.split('@')[0] || sumber;
@@ -126,17 +126,17 @@ function formatNomorTerhubung(nomorRaw: string | null): string {
   return digit;
 }
 
-function ambilPesanError(err: unknown): string {
+function amblpsnerrr(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-function normalisasiAngka(v: string, maks: number): number {
+function nrmlssangk(v: string, maks: number): number {
   const angka = Number(v || 0);
   if (!Number.isFinite(angka)) return 0;
   return Math.max(0, Math.min(maks, Math.floor(angka)));
 }
 
-function hitungPreviewWaktuKirim(durasi: { jam: number; menit: number; detik: number }, nowMs: number): string | null {
+function htngprvwwktkrm(durasi: { jam: number; menit: number; detik: number }, nowMs: number): string | null {
   const totalDetik = durasi.jam * 3600 + durasi.menit * 60 + durasi.detik;
   if (totalDetik <= 0) return null;
 
@@ -160,11 +160,11 @@ function hitungPreviewWaktuKirim(durasi: { jam: number; menit: number; detik: nu
   return `Will be send at ${jamMenitDetik} in ${dayOffset} days`;
 }
 
-function buatIdBlok(): string {
+function buatidblk(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function ringkasProgressSendMessage(job: Job): string {
+function rngksprgrsssndmssg(job: Job): string {
   if (!job.sendMessage?.progress) return 'Waiting initial send';
   const progress = job.sendMessage.progress;
   if (progress.waitingReply) {
@@ -185,7 +185,7 @@ function ringkasProgressSendMessage(job: Job): string {
   return `Next block ${idx + 1}/${total}`;
 }
 
-async function bacaJson<T>(res: Response): Promise<T | null> {
+async function bacajsn<T>(res: Response): Promise<T | null> {
   try {
     return (await res.json()) as T;
   } catch {
@@ -193,13 +193,13 @@ async function bacaJson<T>(res: Response): Promise<T | null> {
   }
 }
 
-function pesanApi(defaultPesan: string, res: Response, json: { pesan?: string } | null): string {
+function psnapi(defaultPesan: string, res: Response, json: { pesan?: string } | null): string {
   const pesan = String(json?.pesan || '').trim();
   if (pesan) return pesan;
   return `${defaultPesan} (${res.status})`;
 }
 
-function redirectTop(url: string): void {
+function rdrcttop(url: string): void {
   if (window.top && window.top !== window) {
     window.top.location.href = url;
     return;
@@ -207,14 +207,14 @@ function redirectTop(url: string): void {
   window.location.href = url;
 }
 
-async function pastikanAuth(res: Response): Promise<void> {
+async function pstknath(res: Response): Promise<void> {
   if (res.status === 401) {
-    redirectTop('/');
+    rdrcttop('/');
     throw new Error('Session expired');
   }
 }
 
-function terjemahCatatanWa(catatan: string | null): string {
+function trjmhcttnwa(catatan: string | null): string {
   const sumber = String(catatan || '').trim();
   if (!sumber) return 'Waiting for status';
   const map: Record<string, string> = {
@@ -228,37 +228,37 @@ function terjemahCatatanWa(catatan: string | null): string {
   return map[sumber] || sumber;
 }
 
-async function ambilStatusWa(): Promise<StatusWa> {
+async function amblsttswa(): Promise<StatusWa> {
   const res = await fetch('/api/wa/status');
-  await pastikanAuth(res);
-  const json = await bacaJson<ResWa>(res);
+  await pstknath(res);
+  const json = await bacajsn<ResWa>(res);
   if (!res.ok || !json?.ok || !json.wa) {
-    throw new Error(pesanApi('Failed to fetch WA status', res, json));
+    throw new Error(psnapi('Failed to fetch WA status', res, json));
   }
   return json.wa;
 }
 
-async function ambilNamaAccount(): Promise<string> {
+async function amblnamaaccnt(): Promise<string> {
   const res = await fetch('/api/session');
-  await pastikanAuth(res);
-  const json = await bacaJson<ResSession>(res);
+  await pstknath(res);
+  const json = await bacajsn<ResSession>(res);
   if (!res.ok || !json?.ok) {
-    throw new Error(pesanApi('Failed to fetch session', res, json));
+    throw new Error(psnapi('Failed to fetch session', res, json));
   }
   return String(json.session?.username || '').trim();
 }
 
-async function ambilJobs(): Promise<Job[]> {
+async function ambljbs(): Promise<Job[]> {
   const res = await fetch('/api/jobs');
-  await pastikanAuth(res);
-  const json = await bacaJson<ResJobs>(res);
+  await pstknath(res);
+  const json = await bacajsn<ResJobs>(res);
   if (!res.ok || !json?.ok || !Array.isArray(json.job)) {
-    throw new Error(pesanApi('Failed to fetch jobs', res, json));
+    throw new Error(psnapi('Failed to fetch jobs', res, json));
   }
   return json.job;
 }
 
-async function batalkanJob(id: string): Promise<void> {
+async function btlknjob(id: string): Promise<void> {
   const res = await fetch(`/api/jobs/${encodeURIComponent(id)}/cancel`, { method: 'POST' });
   if (!res.ok) {
     const j = await res.json().catch(() => null);
@@ -266,20 +266,20 @@ async function batalkanJob(id: string): Promise<void> {
   }
 }
 
-async function hapusJobSelesai(): Promise<number> {
+async function hpsjobsls(): Promise<number> {
   const res = await fetch('/api/jobs/clear-completed', { method: 'POST' });
-  const json = await bacaJson<ResClearCompleted & { pesan?: string }>(res);
+  const json = await bacajsn<ResClearCompleted & { pesan?: string }>(res);
   if (!res.ok || !json?.ok) {
-    throw new Error(pesanApi('Failed to clear completed jobs', res, json));
+    throw new Error(psnapi('Failed to clear completed jobs', res, json));
   }
   return Number(json.jumlahDihapus || 0);
 }
 
-async function kirimLogout(): Promise<void> {
+async function krmlgt(): Promise<void> {
   await fetch('/api/logout', { method: 'POST' });
 }
 
-function uploadDenganProgres(file: File, onProgress: (persen: number) => void): Promise<InfoMedia> {
+function uplddngnprgrs(file: File, onProgress: (persen: number) => void): Promise<InfoMedia> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const form = new FormData();
@@ -310,7 +310,7 @@ function uploadDenganProgres(file: File, onProgress: (persen: number) => void): 
   });
 }
 
-async function kirimJobWaStatus(payload: {
+async function krmjobwastts(payload: {
   durasi: { jam: number; menit: number; detik: number };
   media: InfoMedia;
   caption: string;
@@ -321,12 +321,12 @@ async function kirimJobWaStatus(payload: {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ jenis: 'wa_status', ...payload }),
   });
-  await pastikanAuth(res);
-  const json = await bacaJson<{ ok: boolean; pesan?: string }>(res);
-  if (!res.ok || !json?.ok) throw new Error(pesanApi('Failed to create WA Status job', res, json));
+  await pstknath(res);
+  const json = await bacajsn<{ ok: boolean; pesan?: string }>(res);
+  if (!res.ok || !json?.ok) throw new Error(psnapi('Failed to create WA Status job', res, json));
 }
 
-async function kirimJobSendMessage(payload: {
+async function krmjobsndmssg(payload: {
   durasi: { jam: number; menit: number; detik: number };
   sendMessage: { nomorTujuan: string; pesanAwal: string; media?: InfoMedia; blok: BlokSendMessage[] };
 }): Promise<void> {
@@ -335,12 +335,12 @@ async function kirimJobSendMessage(payload: {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ jenis: 'send_message', ...payload }),
   });
-  await pastikanAuth(res);
-  const json = await bacaJson<{ ok: boolean; pesan?: string }>(res);
-  if (!res.ok || !json?.ok) throw new Error(pesanApi('Failed to create Send Message job', res, json));
+  await pstknath(res);
+  const json = await bacajsn<{ ok: boolean; pesan?: string }>(res);
+  if (!res.ok || !json?.ok) throw new Error(psnapi('Failed to create Send Message job', res, json));
 }
 
-function DashboardApp(): React.JSX.Element {
+function Dshbrdapp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
   const berjalanDalamFrame =
     window.location.pathname === '/dashboard-frame' || window.location.pathname === '/dashboard-frame.html';
@@ -432,37 +432,37 @@ function DashboardApp(): React.JSX.Element {
   }, [audienceTipe]);
 
   const previewStatusAt = useMemo(() => {
-    const jam = normalisasiAngka(durasiJam, 999);
-    const menit = normalisasiAngka(durasiMenit, 59);
-    const detik = normalisasiAngka(durasiDetik, 59);
-    return hitungPreviewWaktuKirim({ jam, menit, detik }, nowMs);
+    const jam = nrmlssangk(durasiJam, 999);
+    const menit = nrmlssangk(durasiMenit, 59);
+    const detik = nrmlssangk(durasiDetik, 59);
+    return htngprvwwktkrm({ jam, menit, detik }, nowMs);
   }, [durasiJam, durasiMenit, durasiDetik, nowMs]);
 
   const previewSendAt = useMemo(() => {
-    const jam = normalisasiAngka(sendJam, 999);
-    const menit = normalisasiAngka(sendMenit, 59);
-    const detik = normalisasiAngka(sendDetik, 59);
-    return hitungPreviewWaktuKirim({ jam, menit, detik }, nowMs);
+    const jam = nrmlssangk(sendJam, 999);
+    const menit = nrmlssangk(sendMenit, 59);
+    const detik = nrmlssangk(sendDetik, 59);
+    return htngprvwwktkrm({ jam, menit, detik }, nowMs);
   }, [sendJam, sendMenit, sendDetik, nowMs]);
 
-  async function muatSemua(): Promise<void> {
+  async function muatsemua(): Promise<void> {
     const [hasilWa, hasilJobs, hasilSession] = await Promise.allSettled([
-      ambilStatusWa(),
-      ambilJobs(),
-      ambilNamaAccount(),
+      amblsttswa(),
+      ambljbs(),
+      amblnamaaccnt(),
     ]);
     if (hasilWa.status === 'fulfilled') {
       setWa(hasilWa.value);
       if (!berjalanDalamFrame && hasilWa.value.status !== 'terhubung') {
-        redirectTop('/authorize');
+        rdrcttop('/authorize');
         return;
       }
     } else {
-      setToast(`WA status error ${ambilPesanError(hasilWa.reason)}`);
+      setToast(`WA status error ${amblpsnerrr(hasilWa.reason)}`);
     }
 
     if (hasilJobs.status === 'fulfilled') setJobs(hasilJobs.value);
-    else setToast(`Jobs error ${ambilPesanError(hasilJobs.reason)}`);
+    else setToast(`Jobs error ${amblpsnerrr(hasilJobs.reason)}`);
 
     if (hasilSession.status === 'fulfilled') setNamaAccount(hasilSession.value);
 
@@ -472,7 +472,7 @@ function DashboardApp(): React.JSX.Element {
   }
 
   useEffect(() => {
-    void muatSemua().catch((err) => setToast(ambilPesanError(err)));
+    void muatsemua().catch((err) => setToast(amblpsnerrr(err)));
   }, []);
 
   useEffect(() => {
@@ -482,56 +482,56 @@ function DashboardApp(): React.JSX.Element {
 
   useEffect(() => {
     const poll = window.setInterval(() => {
-      void muatSemua().catch(() => null);
+      void muatsemua().catch(() => null);
     }, 2500);
     return () => window.clearInterval(poll);
   }, []);
 
-  async function handleUploadStatus(file: File): Promise<void> {
+  async function hndlupldstts(file: File): Promise<void> {
     setUploadStatusMode('uploading');
     setUploadStatusProgress(0);
     setToast('Upload started');
     try {
-      const media = await uploadDenganProgres(file, setUploadStatusProgress);
+      const media = await uplddngnprgrs(file, setUploadStatusProgress);
       setMediaStatus(media);
       setUploadStatusMode('uploaded');
       setComposerMode('wa_status');
       setToast('Upload complete');
     } catch (err) {
       setUploadStatusMode('failed');
-      setToast(ambilPesanError(err));
+      setToast(amblpsnerrr(err));
     } finally {
       window.setTimeout(() => setUploadStatusMode('idle'), 900);
     }
   }
 
-  async function handleUploadSend(file: File): Promise<void> {
+  async function hndlupldsnd(file: File): Promise<void> {
     setUploadSendStatus('uploading');
     setUploadSendProgress(0);
     setToast('Uploading media for send message');
     try {
-      const media = await uploadDenganProgres(file, setUploadSendProgress);
+      const media = await uplddngnprgrs(file, setUploadSendProgress);
       setMediaSend(media);
       setUploadSendStatus('uploaded');
       setComposerMode('send_message');
       setToast('Media ready');
     } catch (err) {
       setUploadSendStatus('failed');
-      setToast(ambilPesanError(err));
+      setToast(amblpsnerrr(err));
     } finally {
       window.setTimeout(() => setUploadSendStatus('idle'), 900);
     }
   }
 
-  async function handleSubmitStatus(): Promise<void> {
+  async function hndlsbmtstts(): Promise<void> {
     if (!mediaStatus) {
       setToast('Upload a file first');
       return;
     }
 
-    const jam = normalisasiAngka(durasiJam, 999);
-    const menit = normalisasiAngka(durasiMenit, 59);
-    const detik = normalisasiAngka(durasiDetik, 59);
+    const jam = nrmlssangk(durasiJam, 999);
+    const menit = nrmlssangk(durasiMenit, 59);
+    const detik = nrmlssangk(durasiDetik, 59);
     if (jam + menit + detik <= 0) {
       setToast('Duration must be greater than zero');
       return;
@@ -542,12 +542,12 @@ function DashboardApp(): React.JSX.Element {
     const daftarNomor =
       tipeAud === 'my_contacts' || tipeAud === 'developer_command'
         ? undefined
-        : pecahNomor(inputAudienceMentah);
+        : pchnmr(inputAudienceMentah);
     const command = tipeAud === 'developer_command' ? inputAudienceMentah : undefined;
 
     setIsSubmittingStatus(true);
     try {
-      await kirimJobWaStatus({
+      await krmjobwastts({
         durasi: { jam, menit, detik },
         media: mediaStatus,
         caption: caption.trim(),
@@ -563,35 +563,35 @@ function DashboardApp(): React.JSX.Element {
       setAudienceInput('');
       setUploadStatusProgress(0);
       setComposerMode('none');
-      await muatSemua();
+      await muatsemua();
     } catch (err) {
-      setToast(ambilPesanError(err));
+      setToast(amblpsnerrr(err));
     } finally {
       setIsSubmittingStatus(false);
     }
   }
 
-  function tambahBlockDelay(): void {
-    setSendBlocks((prev) => [...prev, { id: buatIdBlok(), jenis: 'delay', jam: '', menit: '', detik: '' }]);
+  function tmbhblckdly(): void {
+    setSendBlocks((prev) => [...prev, { id: buatidblk(), jenis: 'delay', jam: '', menit: '', detik: '' }]);
   }
 
-  function tambahBlockWaitReply(): void {
-    setSendBlocks((prev) => [...prev, { id: buatIdBlok(), jenis: 'wait_reply', mode: 'any', expectedText: '' }]);
+  function tmbhblckwaitrply(): void {
+    setSendBlocks((prev) => [...prev, { id: buatidblk(), jenis: 'wait_reply', mode: 'any', expectedText: '' }]);
   }
 
-  function tambahBlockSendMessage(): void {
-    setSendBlocks((prev) => [...prev, { id: buatIdBlok(), jenis: 'send_message', pesan: '' }]);
+  function tmbhblcksndmssg(): void {
+    setSendBlocks((prev) => [...prev, { id: buatidblk(), jenis: 'send_message', pesan: '' }]);
   }
 
-  function hapusBlock(id: string): void {
+  function hpsblck(id: string): void {
     setSendBlocks((prev) => prev.filter((item) => item.id !== id));
   }
 
-  function updateBlock(id: string, patch: Partial<BlokUi>): void {
+  function updtblck(id: string, patch: Partial<BlokUi>): void {
     setSendBlocks((prev) => prev.map((item) => (item.id === id ? ({ ...item, ...patch } as BlokUi) : item)));
   }
 
-  function pindahkanBlock(dariId: string, keId: string): void {
+  function pndhknblck(dariId: string, keId: string): void {
     if (dariId === keId) return;
     setSendBlocks((prev) => {
       const idxDari = prev.findIndex((b) => b.id === dariId);
@@ -605,35 +605,35 @@ function DashboardApp(): React.JSX.Element {
     });
   }
 
-  function mulaiDragBlock(id: string, e: React.DragEvent<HTMLDivElement>): void {
+  function mulaidrgblck(id: string, e: React.DragEvent<HTMLDivElement>): void {
     setDraggingBlockId(id);
     setDragOverBlockId(id);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', id);
   }
 
-  function saatDragMasukBlock(id: string): void {
+  function saatdrgmskblck(id: string): void {
     if (!draggingBlockId || draggingBlockId === id) return;
     if (dragOverBlockId === id) return;
     setDragOverBlockId(id);
-    pindahkanBlock(draggingBlockId, id);
+    pndhknblck(draggingBlockId, id);
   }
 
-  function selesaiDragBlock(): void {
+  function slsdrgblck(): void {
     setDraggingBlockId(null);
     setDragOverBlockId(null);
   }
 
-  async function handleSubmitSendMessage(): Promise<void> {
-    const jam = normalisasiAngka(sendJam, 999);
-    const menit = normalisasiAngka(sendMenit, 59);
-    const detik = normalisasiAngka(sendDetik, 59);
+  async function hndlsbmtsndmssg(): Promise<void> {
+    const jam = nrmlssangk(sendJam, 999);
+    const menit = nrmlssangk(sendMenit, 59);
+    const detik = nrmlssangk(sendDetik, 59);
     if (jam + menit + detik <= 0) {
       setToast('Send At duration must be greater than zero');
       return;
     }
 
-    const nomorTujuan = rapikanNomorSatu(sendNomor);
+    const nomorTujuan = rpknnmrsatu(sendNomor);
     if (!nomorTujuan) {
       setToast('Phone Number is not valid');
       return;
@@ -648,9 +648,9 @@ function DashboardApp(): React.JSX.Element {
     const blokFinal: BlokSendMessage[] = [];
     for (const block of sendBlocks) {
       if (block.jenis === 'delay') {
-        const dJam = normalisasiAngka(block.jam, 999);
-        const dMenit = normalisasiAngka(block.menit, 59);
-        const dDetik = normalisasiAngka(block.detik, 59);
+        const dJam = nrmlssangk(block.jam, 999);
+        const dMenit = nrmlssangk(block.menit, 59);
+        const dDetik = nrmlssangk(block.detik, 59);
         if (dJam + dMenit + dDetik <= 0) {
           setToast('Delay block must be greater than zero');
           return;
@@ -684,7 +684,7 @@ function DashboardApp(): React.JSX.Element {
 
     setIsSubmittingSend(true);
     try {
-      await kirimJobSendMessage({
+      await krmjobsndmssg({
         durasi: { jam, menit, detik },
         sendMessage: {
           nomorTujuan,
@@ -703,21 +703,21 @@ function DashboardApp(): React.JSX.Element {
       setSendPesanAwal('');
       setSendBlocks([]);
       setComposerMode('none');
-      await muatSemua();
+      await muatsemua();
     } catch (err) {
-      setToast(ambilPesanError(err));
+      setToast(amblpsnerrr(err));
     } finally {
       setIsSubmittingSend(false);
     }
   }
 
   const waCatatan = wa?.status === 'terhubung'
-    ? `Connected On ${formatNomorTerhubung(wa?.nomor || null)}`
-    : terjemahCatatanWa(wa?.catatan || null);
+    ? `Connected On ${frmtnmrtrhbng(wa?.nomor || null)}`
+    : trjmhcttnwa(wa?.catatan || null);
 
   return (
     <div className="appShell">
-      <motion.main
+      <motion.mnx
         className="appContainer"
         initial={reduceMotion ? undefined : { opacity: 0, filter: 'blur(12px)', y: 22 }}
         animate={reduceMotion ? undefined : { opacity: 1, filter: 'blur(0px)', y: 0 }}
@@ -734,7 +734,7 @@ function DashboardApp(): React.JSX.Element {
               type="button"
               className="btn btnTopLink"
               whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-              onClick={() => void kirimLogout().finally(() => redirectTop('/'))}
+              onClick={() => void krmlgt().finally(() => rdrcttop('/'))}
             >
               Logout
             </motion.button>
@@ -772,7 +772,7 @@ function DashboardApp(): React.JSX.Element {
           <input ref={statusInputFileRef} type="file" accept="image/*,video/*" className="hiddenInput" onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
-            await handleUploadStatus(file);
+            await hndlupldstts(file);
             e.target.value = '';
           }} />
         </motion.section>
@@ -796,7 +796,7 @@ function DashboardApp(): React.JSX.Element {
                 <div className="fieldLabel">File</div>
                 <div className="metaText">
                   {mediaStatus
-                    ? `${mediaStatus.namaAsli} ${mediaStatus.tipe} ${formatUkuran(mediaStatus.ukuranByte)}`
+                    ? `${mediaStatus.namaAsli} ${mediaStatus.tipe} ${frmtukrn(mediaStatus.ukuranByte)}`
                     : 'No file selected, use Upload button from toolbar'}
                 </div>
 
@@ -834,7 +834,7 @@ function DashboardApp(): React.JSX.Element {
                 ) : null}
 
                 <div className="spacer12" />
-                <motion.button type="button" className="btn btnPrimary btnWide" whileTap={reduceMotion ? undefined : { scale: 0.98 }} disabled={isSubmittingStatus} onClick={() => void handleSubmitStatus()}>
+                <motion.button type="button" className="btn btnPrimary btnWide" whileTap={reduceMotion ? undefined : { scale: 0.98 }} disabled={isSubmittingStatus} onClick={() => void hndlsbmtstts()}>
                   {isSubmittingStatus ? 'Saving schedule' : 'Submit schedule'}
                 </motion.button>
               </div>
@@ -859,7 +859,7 @@ function DashboardApp(): React.JSX.Element {
                 <div className="uploadInlineRow">
                   <div>
                     <div className="fieldLabel mediaFieldLabel">Media (optional)</div>
-                    <div className="metaText">{mediaSend ? `${mediaSend.namaAsli} ${mediaSend.tipe} ${formatUkuran(mediaSend.ukuranByte)}` : 'No media'}</div>
+                    <div className="metaText">{mediaSend ? `${mediaSend.namaAsli} ${mediaSend.tipe} ${frmtukrn(mediaSend.ukuranByte)}` : 'No media'}</div>
                   </div>
                   <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={() => sendInputFileRef.current?.click()}>
                     Upload
@@ -869,7 +869,7 @@ function DashboardApp(): React.JSX.Element {
                 <input ref={sendInputFileRef} type="file" accept="image/*,video/*" className="hiddenInput" onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  await handleUploadSend(file);
+                  await hndlupldsnd(file);
                   e.target.value = '';
                 }} />
 
@@ -903,11 +903,11 @@ function DashboardApp(): React.JSX.Element {
                       layout
                       transition={spring}
                       draggable
-                      onDragStart={(e) => mulaiDragBlock(block.id, e)}
-                      onDragEnd={selesaiDragBlock}
+                      onDragStart={(e) => mulaidrgblck(block.id, e)}
+                      onDragEnd={slsdrgblck}
                       onDragEnter={(e) => {
                         e.preventDefault();
-                        saatDragMasukBlock(block.id);
+                        saatdrgmskblck(block.id);
                       }}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -915,51 +915,51 @@ function DashboardApp(): React.JSX.Element {
                       }}
                       onDrop={(e) => {
                         e.preventDefault();
-                        selesaiDragBlock();
+                        slsdrgblck();
                       }}
                     >
                       <div className="blockHead">
                         <div className="blockDrag">#{idx + 1}</div>
                         <div className="blockTitle">{block.jenis}</div>
-                        <button type="button" className="blockDelete" onClick={() => hapusBlock(block.id)}>Remove</button>
+                        <button type="button" className="blockDelete" onClick={() => hpsblck(block.id)}>Remove</button>
                       </div>
 
                       {block.jenis === 'delay' ? (
                         <div className="durationGrid">
-                          <input className="input" inputMode="numeric" placeholder="hours" value={block.jam} onChange={(e) => updateBlock(block.id, { jam: e.target.value.replace(/\D/g, '').slice(0, 3) })} />
-                          <input className="input" inputMode="numeric" placeholder="minutes" value={block.menit} onChange={(e) => updateBlock(block.id, { menit: e.target.value.replace(/\D/g, '').slice(0, 2) })} />
-                          <input className="input" inputMode="numeric" placeholder="seconds" value={block.detik} onChange={(e) => updateBlock(block.id, { detik: e.target.value.replace(/\D/g, '').slice(0, 2) })} />
+                          <input className="input" inputMode="numeric" placeholder="hours" value={block.jam} onChange={(e) => updtblck(block.id, { jam: e.target.value.replace(/\D/g, '').slice(0, 3) })} />
+                          <input className="input" inputMode="numeric" placeholder="minutes" value={block.menit} onChange={(e) => updtblck(block.id, { menit: e.target.value.replace(/\D/g, '').slice(0, 2) })} />
+                          <input className="input" inputMode="numeric" placeholder="seconds" value={block.detik} onChange={(e) => updtblck(block.id, { detik: e.target.value.replace(/\D/g, '').slice(0, 2) })} />
                         </div>
                       ) : null}
 
                       {block.jenis === 'wait_reply' ? (
                         <>
-                          <select className="select" value={block.mode} onChange={(e) => updateBlock(block.id, { mode: e.target.value as 'any' | 'exact' })}>
+                          <select className="select" value={block.mode} onChange={(e) => updtblck(block.id, { mode: e.target.value as 'any' | 'exact' })}>
                             <option value="any">Wait for any reply</option>
                             <option value="exact">Wait for exact reply</option>
                           </select>
                           {block.mode === 'exact' ? (
-                            <input className="input" placeholder="Expected exact text" value={block.expectedText} onChange={(e) => updateBlock(block.id, { expectedText: e.target.value })} />
+                            <input className="input" placeholder="Expected exact text" value={block.expectedText} onChange={(e) => updtblck(block.id, { expectedText: e.target.value })} />
                           ) : null}
                         </>
                       ) : null}
 
                       {block.jenis === 'send_message' ? (
-                        <textarea className="textarea" placeholder="Message text" value={block.pesan} onChange={(e) => updateBlock(block.id, { pesan: e.target.value })} />
+                        <textarea className="textarea" placeholder="Message text" value={block.pesan} onChange={(e) => updtblck(block.id, { pesan: e.target.value })} />
                       ) : null}
                     </motion.div>
                   );
                   })}
                 </div>
                 <div className="blockActions">
-                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tambahBlockDelay}>+ Delay</motion.button>
-                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tambahBlockWaitReply}>+ Wait Reply</motion.button>
-                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tambahBlockSendMessage}>+ Send Message</motion.button>
+                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tmbhblckdly}>+ Delay</motion.button>
+                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tmbhblckwaitrply}>+ Wait Reply</motion.button>
+                  <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={tmbhblcksndmssg}>+ Send Message</motion.button>
                 </div>
                 <div className="blockHint">Drag each block to reorder the flow.</div>
 
                 <div className="spacer12" />
-                <motion.button type="button" className="btn btnPrimary btnWide" whileTap={reduceMotion ? undefined : { scale: 0.98 }} disabled={isSubmittingSend} onClick={() => void handleSubmitSendMessage()}>
+                <motion.button type="button" className="btn btnPrimary btnWide" whileTap={reduceMotion ? undefined : { scale: 0.98 }} disabled={isSubmittingSend} onClick={() => void hndlsbmtsndmssg()}>
                   {isSubmittingSend ? 'Saving schedule' : 'Submit send message'}
                 </motion.button>
               </div>
@@ -977,11 +977,11 @@ function DashboardApp(): React.JSX.Element {
               <span className="badge">{jobs.length}</span>
               <motion.button type="button" className="btn btnGhost" whileTap={reduceMotion ? undefined : { scale: 0.98 }} disabled={jumlahSelesai === 0} onClick={async () => {
                 try {
-                  const jumlah = await hapusJobSelesai();
+                  const jumlah = await hpsjobsls();
                   setToast(jumlah > 0 ? `${jumlah} completed jobs removed` : 'No completed jobs yet');
-                  await muatSemua();
+                  await muatsemua();
                 } catch (err) {
-                  setToast(ambilPesanError(err));
+                  setToast(amblpsnerrr(err));
                 }
               }}>
                 {jumlahSelesai > 0 ? `Clear done (${jumlahSelesai})` : 'Clear done'}
@@ -994,8 +994,8 @@ function DashboardApp(): React.JSX.Element {
               {jobs.length ? jobs.map((job) => {
                 const jenis = job.jenis || 'wa_status';
                 const meta = jenis === 'send_message' && job.sendMessage
-                  ? `Target ${formatWaktu(job.targetMs)}\nTo ${job.sendMessage.nomorTujuan}\n${ringkasProgressSendMessage(job)}${job.terakhirError ? `\nError ${job.terakhirError}` : ''}`
-                  : `Target ${formatWaktu(job.targetMs)}\nAttempt ${job.attemptCount}${job.berikutnyaCobaMs ? `\nNext ${formatWaktu(job.berikutnyaCobaMs)}` : ''}${job.terakhirError ? `\nError ${job.terakhirError}` : ''}`;
+                  ? `Target ${frmtwkt(job.targetMs)}\nTo ${job.sendMessage.nomorTujuan}\n${rngksprgrsssndmssg(job)}${job.terakhirError ? `\nError ${job.terakhirError}` : ''}`
+                  : `Target ${frmtwkt(job.targetMs)}\nAttempt ${job.attemptCount}${job.berikutnyaCobaMs ? `\nNext ${frmtwkt(job.berikutnyaCobaMs)}` : ''}${job.terakhirError ? `\nError ${job.terakhirError}` : ''}`;
 
                 return (
                   <motion.div key={job.id} className="jobItem" layout initial={reduceMotion ? undefined : { opacity: 0, y: 8, filter: 'blur(8px)' }} animate={reduceMotion ? undefined : { opacity: 1, y: 0, filter: 'blur(0px)' }} exit={reduceMotion ? undefined : { opacity: 0, y: -8 }} transition={spring}>
@@ -1004,11 +1004,11 @@ function DashboardApp(): React.JSX.Element {
                     {job.status !== 'success' && job.status !== 'cancel' ? (
                       <motion.button type="button" className="btn btnDangerSoft" whileTap={reduceMotion ? undefined : { scale: 0.98 }} onClick={async () => {
                         try {
-                          await batalkanJob(job.id);
+                          await btlknjob(job.id);
                           setToast('Job cancelled');
-                          await muatSemua();
+                          await muatsemua();
                         } catch (err) {
-                          setToast(ambilPesanError(err));
+                          setToast(amblpsnerrr(err));
                         }
                       }}>
                         Cancel
@@ -1024,7 +1024,7 @@ function DashboardApp(): React.JSX.Element {
             </AnimatePresence>
           </div>
         </motion.section>
-      </motion.main>
+      </motion.mnx>
 
       <AnimatePresence>
         {toast ? (
@@ -1038,4 +1038,4 @@ function DashboardApp(): React.JSX.Element {
 }
 
 const host = document.getElementById('app-dashboard');
-if (host) createRoot(host).render(<DashboardApp />);
+if (host) createRoot(host).render(<Dshbrdapp />);

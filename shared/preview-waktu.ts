@@ -1,5 +1,3 @@
-// shared/preview-waktu.ts
-// Utility untuk preview waktu kirim berdasarkan input durasi.
 
 export type DurasiInput = {
   jam: number;
@@ -13,12 +11,12 @@ export type HasilPreviewPostAt = {
   dayOffset: number;
 };
 
-function normalisasiAngka(v: number): number {
+function nrmlssangk(v: number): number {
   if (!Number.isFinite(v)) return 0;
   return Math.max(0, Math.floor(v));
 }
 
-function hitungDayOffset(now: Date, target: Date): number {
+function htngdayoffst(now: Date, target: Date): number {
   const awalHariNow = new Date(now);
   awalHariNow.setHours(0, 0, 0, 0);
 
@@ -28,7 +26,7 @@ function hitungDayOffset(now: Date, target: Date): number {
   return Math.round((awalHariTarget.getTime() - awalHariNow.getTime()) / 86_400_000);
 }
 
-function formatJamMenit(d: Date): string {
+function frmtjammnt(d: Date): string {
   return d.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
@@ -36,10 +34,10 @@ function formatJamMenit(d: Date): string {
   });
 }
 
-export function formatPreviewPostAt(durasi: DurasiInput, now: Date = new Date()): HasilPreviewPostAt {
-  const jam = normalisasiAngka(durasi.jam);
-  const menit = normalisasiAngka(durasi.menit);
-  const detik = normalisasiAngka(durasi.detik);
+export function frmtprvwpstat(durasi: DurasiInput, now: Date = new Date()): HasilPreviewPostAt {
+  const jam = nrmlssangk(durasi.jam);
+  const menit = nrmlssangk(durasi.menit);
+  const detik = nrmlssangk(durasi.detik);
 
   const totalMs = (jam * 60 * 60 + menit * 60 + detik) * 1000;
   if (totalMs <= 0) {
@@ -51,8 +49,8 @@ export function formatPreviewPostAt(durasi: DurasiInput, now: Date = new Date())
   }
 
   const target = new Date(now.getTime() + totalMs);
-  const dayOffset = hitungDayOffset(now, target);
-  const waktu = formatJamMenit(target);
+  const dayOffset = htngdayoffst(now, target);
+  const waktu = frmtjammnt(target);
 
   if (dayOffset <= 0) {
     return {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { normalisasiDatabaseUntukTest } from '../db/penyimpanan';
+import { nrmlssdtbsuntktst } from '../db/penyimpanan';
 
-describe('normalisasiDatabaseUntukTest', () => {
+describe('nrmlssdtbsuntktst', () => {
   it('migrasi versi 1 ke versi 2 + pindah data lama ke user env', async () => {
     process.env.DASH_USER = 'LegacyAdmin';
     process.env.DASH_PASS = 'legacy-pass';
@@ -49,7 +49,7 @@ describe('normalisasiDatabaseUntukTest', () => {
       ],
     };
 
-    const hasil = await normalisasiDatabaseUntukTest(legacy);
+    const hasil = await nrmlssdtbsuntktst(legacy);
     const userEnv = hasil.users.find((u) => u.nameLower === 'legacyadmin');
 
     expect(hasil.versi).toBe(2);

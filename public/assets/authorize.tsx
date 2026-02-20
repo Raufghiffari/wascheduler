@@ -17,11 +17,11 @@ type ResSession = {
   session?: { userId: string; username: string };
 };
 
-function formatHashUserId(userId: string): string {
+function frmthshusrid(userId: string): string {
   return `/authorize#Userid:${encodeURIComponent(userId)}`;
 }
 
-function terjemahCatatanWa(catatan: string | null): string {
+function trjmhcttnwa(catatan: string | null): string {
   const sumber = String(catatan || '').trim();
   if (!sumber) return 'Waiting for QR';
   const map: Record<string, string> = {
@@ -34,7 +34,7 @@ function terjemahCatatanWa(catatan: string | null): string {
   return map[sumber] || sumber;
 }
 
-async function ambilSession(): Promise<ResSession> {
+async function amblsssn(): Promise<ResSession> {
   const res = await fetch('/api/session');
   if (res.status === 401) {
     window.location.href = '/login';
@@ -43,7 +43,7 @@ async function ambilSession(): Promise<ResSession> {
   return (await res.json()) as ResSession;
 }
 
-async function ambilStatusWa(): Promise<StatusWa> {
+async function amblsttswa(): Promise<StatusWa> {
   const res = await fetch('/api/wa/status');
   if (res.status === 401) {
     window.location.href = '/login';
@@ -56,7 +56,7 @@ async function ambilStatusWa(): Promise<StatusWa> {
   return json.wa;
 }
 
-function AuthorizeApp(): React.JSX.Element {
+function Athrzapp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
   const [wa, setWa] = useState<StatusWa | null>(null);
   const [username, setUsername] = useState('');
@@ -112,8 +112,8 @@ function AuthorizeApp(): React.JSX.Element {
   useEffect(() => {
     let aktif = true;
 
-    async function muatAwal(): Promise<void> {
-      const sesi = await ambilSession();
+    async function muatawl(): Promise<void> {
+      const sesi = await amblsssn();
       if (!aktif) return;
       if (!sesi.ok) return;
 
@@ -122,14 +122,14 @@ function AuthorizeApp(): React.JSX.Element {
       setUserId(sid);
 
       if (sid) {
-        window.history.replaceState(null, '', formatHashUserId(sid));
+        window.history.replaceState(null, '', frmthshusrid(sid));
       }
 
       if (sesi.nextRoute === '/dashboard') {
         setShowGate(false);
       }
 
-      const status = await ambilStatusWa();
+      const status = await amblsttswa();
       if (!aktif) return;
       setWa(status);
       if (status.status === 'terhubung') {
@@ -137,7 +137,7 @@ function AuthorizeApp(): React.JSX.Element {
       }
     }
 
-    void muatAwal().catch((err) => setToast(err instanceof Error ? err.message : String(err)));
+    void muatawl().catch((err) => setToast(err instanceof Error ? err.message : String(err)));
 
     return () => {
       aktif = false;
@@ -146,7 +146,7 @@ function AuthorizeApp(): React.JSX.Element {
 
   useEffect(() => {
     const poll = window.setInterval(() => {
-      void ambilStatusWa()
+      void amblsttswa()
         .then((status) => {
           setWa(status);
           if (status.status === 'terhubung') {
@@ -163,10 +163,10 @@ function AuthorizeApp(): React.JSX.Element {
 
   useEffect(() => {
     if (!userId) return;
-    window.history.replaceState(null, '', formatHashUserId(userId));
+    window.history.replaceState(null, '', frmthshusrid(userId));
   }, [userId, showGate]);
 
-  const waCatatan = terjemahCatatanWa(wa?.catatan || null);
+  const waCatatan = trjmhcttnwa(wa?.catatan || null);
   const modeQr = wa?.qrDataUrl ? 'qr' : 'connecting';
 
   return (
@@ -192,7 +192,7 @@ function AuthorizeApp(): React.JSX.Element {
 
       <AnimatePresence>
         {showGate ? (
-          <motion.main
+          <motion.mnx
             key="gate"
             className="authorizeGate"
             initial={reduceMotion ? undefined : { opacity: 0, scale: 0.92, y: 24, filter: 'blur(14px)' }}
@@ -275,7 +275,7 @@ function AuthorizeApp(): React.JSX.Element {
 
               <p className="metaText">{waCatatan}</p>
             </section>
-          </motion.main>
+          </motion.mnx>
         ) : null}
       </AnimatePresence>
 
@@ -298,5 +298,5 @@ function AuthorizeApp(): React.JSX.Element {
 
 const host = document.getElementById('app-authorize');
 if (host) {
-  createRoot(host).render(<AuthorizeApp />);
+  createRoot(host).render(<Athrzapp />);
 }

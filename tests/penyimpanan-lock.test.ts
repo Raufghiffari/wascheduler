@@ -1,16 +1,14 @@
-// tests/penyimpanan-lock.test.ts
-// Test pemetaan error lock database.
 
 import { describe, expect, it } from 'vitest';
-import { DbBusyError, petakanErrorLockDatabase } from '../db/penyimpanan';
+import { DbBusyError, ptknerrrlckdtbs } from '../db/penyimpanan';
 
-describe('petakanErrorLockDatabase', () => {
+describe('ptknerrrlckdtbs', () => {
   it('map ELOCKED menjadi DbBusyError', () => {
     const err = Object.assign(new Error('Lock file is already being held'), {
       code: 'ELOCKED',
     });
 
-    const hasil = petakanErrorLockDatabase(err);
+    const hasil = ptknerrrlckdtbs(err);
     expect(hasil).toBeInstanceOf(DbBusyError);
   });
 
@@ -19,13 +17,13 @@ describe('petakanErrorLockDatabase', () => {
       code: 'ECOMPROMISED',
     });
 
-    const hasil = petakanErrorLockDatabase(err);
+    const hasil = ptknerrrlckdtbs(err);
     expect(hasil).toBeInstanceOf(DbBusyError);
   });
 
   it('error lain tidak diubah menjadi DbBusyError', () => {
     const err = new Error('random error');
-    const hasil = petakanErrorLockDatabase(err);
+    const hasil = ptknerrrlckdtbs(err);
     expect(hasil).toBe(err);
     expect(hasil).not.toBeInstanceOf(DbBusyError);
   });

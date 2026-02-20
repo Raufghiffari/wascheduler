@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { normalisasiSendMessageBuatJob } from '../server/rute-api';
+import { nrmlsssndmssgbuatjob } from '../server/rute-api';
 
-describe('normalisasiSendMessageBuatJob', () => {
+describe('nrmlsssndmssgbuatjob', () => {
   it('menerima payload valid + normalisasi nomor', () => {
-    const hasil = normalisasiSendMessageBuatJob({
+    const hasil = nrmlsssndmssgbuatjob({
       nomorTujuan: '0812-3456-7890',
       pesanAwal: 'Halo',
       media: undefined,
@@ -33,7 +33,7 @@ describe('normalisasiSendMessageBuatJob', () => {
   });
 
   it('menolak block delay jika 0', () => {
-    const hasil = normalisasiSendMessageBuatJob({
+    const hasil = nrmlsssndmssgbuatjob({
       nomorTujuan: '6281234567890',
       pesanAwal: 'Halo',
       media: undefined,
@@ -51,7 +51,7 @@ describe('normalisasiSendMessageBuatJob', () => {
   });
 
   it('menolak wait_reply exact tanpa expected text', () => {
-    const hasil = normalisasiSendMessageBuatJob({
+    const hasil = nrmlsssndmssgbuatjob({
       nomorTujuan: '6281234567890',
       pesanAwal: 'Halo',
       media: undefined,
@@ -70,7 +70,7 @@ describe('normalisasiSendMessageBuatJob', () => {
   });
 
   it('menolak block send_message kosong', () => {
-    const hasil = normalisasiSendMessageBuatJob({
+    const hasil = nrmlsssndmssgbuatjob({
       nomorTujuan: '6281234567890',
       pesanAwal: 'Halo',
       media: undefined,

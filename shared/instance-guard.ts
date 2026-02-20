@@ -1,5 +1,3 @@
-// shared/instance-guard.ts
-// Guard sederhana untuk mencegah lebih dari satu instance server/worker.
 
 import fs from 'fs/promises';
 import path from 'path';
@@ -28,13 +26,13 @@ const opsiLock = {
   realpath: false,
 };
 
-function normalisasiError(err: unknown): Error {
+function nrmlsserrr(err: unknown): Error {
   if (err instanceof Error) return err;
   return new Error(String(err));
 }
 
-function petakanErrorLock(jenis: JenisInstance, err: unknown): Error {
-  const e = normalisasiError(err);
+function ptknerrrlck(jenis: JenisInstance, err: unknown): Error {
+  const e = nrmlsserrr(err);
   const kode = String((e as { code?: unknown }).code || '');
   const pesan = String(e.message || '').toLowerCase();
 
@@ -45,7 +43,7 @@ function petakanErrorLock(jenis: JenisInstance, err: unknown): Error {
   return e;
 }
 
-async function pastikanFileInstanceAda(file: string): Promise<void> {
+async function pstknfileinstncada(file: string): Promise<void> {
   await fs.mkdir(path.dirname(file), { recursive: true });
   try {
     await fs.access(file);
@@ -54,9 +52,9 @@ async function pastikanFileInstanceAda(file: string): Promise<void> {
   }
 }
 
-export async function ambilGuardInstance(jenis: JenisInstance): Promise<InstanceGuard> {
+export async function amblgrdinstnc(jenis: JenisInstance): Promise<InstanceGuard> {
   const file = path.join(process.cwd(), 'db', `${jenis}.instance`);
-  await pastikanFileInstanceAda(file);
+  await pstknfileinstncada(file);
 
   let compromisedError: unknown = null;
 
@@ -74,17 +72,15 @@ export async function ambilGuardInstance(jenis: JenisInstance): Promise<Instance
         try {
           await release();
         } catch {
-          // Abaikan release error saat shutdown.
         }
 
-        // Compromised lock tetap tidak perlu menjatuhkan proses saat shutdown.
         if (compromisedError) {
           compromisedError = null;
         }
       },
     };
   } catch (err) {
-    throw petakanErrorLock(jenis, err);
+    throw ptknerrrlck(jenis, err);
   }
 }
 

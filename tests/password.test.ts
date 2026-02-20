@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { apakahFormatHashPassword, hashPassword, verifikasiPassword } from '../shared/password';
+import { apkhfrmthshpsswrd, hshpsswrd, vrfkspsswrd } from '../shared/password';
 
 describe('password hash', () => {
   it('hash menghasilkan format scrypt yang valid', async () => {
-    const hash = await hashPassword('secret-123');
-    expect(apakahFormatHashPassword(hash)).toBe(true);
+    const hash = await hshpsswrd('secret-123');
+    expect(apkhfrmthshpsswrd(hash)).toBe(true);
     expect(hash.startsWith('scrypt$')).toBe(true);
   });
 
   it('verifikasi password benar = true', async () => {
-    const hash = await hashPassword('rahasia');
-    const cocok = await verifikasiPassword('rahasia', hash);
+    const hash = await hshpsswrd('rahasia');
+    const cocok = await vrfkspsswrd('rahasia', hash);
     expect(cocok).toBe(true);
   });
 
   it('verifikasi password salah = false', async () => {
-    const hash = await hashPassword('rahasia');
-    const cocok = await verifikasiPassword('salah', hash);
+    const hash = await hshpsswrd('rahasia');
+    const cocok = await vrfkspsswrd('salah', hash);
     expect(cocok).toBe(false);
   });
 });

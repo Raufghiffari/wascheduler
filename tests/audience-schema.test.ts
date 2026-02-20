@@ -1,12 +1,10 @@
-// tests/audience-schema.test.ts
-// Test normalisasi audience payload untuk create job API.
 
 import { describe, expect, it } from 'vitest';
-import { normalisasiAudienceBuatJob } from '../server/rute-api';
+import { nrmlssadncbuatjob } from '../server/rute-api';
 
-describe('normalisasiAudienceBuatJob', () => {
+describe('nrmlssadncbuatjob', () => {
   it('menerima developer_command valid', () => {
-    const hasil = normalisasiAudienceBuatJob({
+    const hasil = nrmlssadncbuatjob({
       tipe: 'developer_command',
       command: '  @MyPreset.2  ',
     });
@@ -18,7 +16,7 @@ describe('normalisasiAudienceBuatJob', () => {
   });
 
   it('menolak developer_command tidak valid', () => {
-    const hasil = normalisasiAudienceBuatJob({
+    const hasil = nrmlssadncbuatjob({
       tipe: 'developer_command',
       command: '@unknown.command',
     });
@@ -29,7 +27,7 @@ describe('normalisasiAudienceBuatJob', () => {
   });
 
   it('mode lama tetap berjalan', () => {
-    const hasil = normalisasiAudienceBuatJob({
+    const hasil = nrmlssadncbuatjob({
       tipe: 'my_contacts_excluded',
       daftarNomor: ['0812-1111-1111', '62812 1111 1111', '62813-2222-2222'],
     });

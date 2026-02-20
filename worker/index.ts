@@ -1,15 +1,13 @@
-// worker/index.ts
-// Entrypoint worker: scheduler + eksekusi job + pengiriman WhatsApp.
 
 import 'dotenv/config';
 import fs from 'fs/promises';
 import {
   DbBusyError,
-  bacaDatabase,
-  ubahDatabase,
-  ubahPathRelatifKeAbsolut,
-  tambahLog,
-  buatStatusWaAwal,
+  bacadtbs,
+  ubhdtbs,
+  ubhpthrltfkeabslt,
+  tmbhlog,
+  buatsttswaawl,
 } from '../db/penyimpanan';
 import type {
   JobSchedule,
@@ -18,13 +16,13 @@ import type {
   SendMessageProgress,
   SendMessageWaitingReply,
 } from '../shared/tipe';
-import { sekarangMs, ubahDurasiKeMs } from '../shared/util-waktu';
-import { ubahNomorKeJid } from '../shared/util-nomor';
-import { ambilGuardInstance, InstanceLockedError } from '../shared/instance-guard';
-import { sambungkanWhatsapp } from './whatsapp';
+import { skrngms, ubhdrskems } from '../shared/util-waktu';
+import { ubhnmrkejid } from '../shared/util-nomor';
+import { amblgrdinstnc, InstanceLockedError } from '../shared/instance-guard';
+import { smbngknwhtspp } from './whatsapp';
 import type { PengirimWhatsapp } from './whatsapp';
-import { ambilAkhirWindowAktif, hitungBerikutnyaCoba, jobMasihAktif, tentukanTahap } from './scheduler';
-import { cocokWaitReply, hitungRetrySendMessage } from './send-message-flow';
+import { amblakhrwndwaktf, htngbrktnycoba, jobmshaktf, tntknthp } from './scheduler';
+import { cckwaitrply, htngrtrysndmssg } from './send-message-flow';
 
 const intervalPollingMs = 1000;
 const intervalSyncPengirimMs = 3000;
@@ -39,12 +37,12 @@ let terakhirLogDbBusyMs = 0;
 let terakhirLogSchedulerGuardMs = 0;
 const terakhirLogSessionDesyncPerUser = new Map<string, number>();
 
-function ringkasError(err: unknown): string {
+function rngkserrr(err: unknown): string {
   if (err instanceof Error) return err.message || err.name;
   return String(err);
 }
 
-function apakahSessionTidakSinkron(err: unknown): boolean {
+function apkhsssntdksnkrn(err: unknown): boolean {
   const teks = String(
     [
       err instanceof Error ? err.name : '',
@@ -61,15 +59,15 @@ function apakahSessionTidakSinkron(err: unknown): boolean {
   );
 }
 
-function apakahJobWaStatus(job: JobSchedule): job is JobScheduleWaStatus {
+function apkhjobwastts(job: JobSchedule): job is JobScheduleWaStatus {
   return job.jenis !== 'send_message' && Boolean((job as JobScheduleWaStatus).media && (job as JobScheduleWaStatus).audience);
 }
 
-function apakahJobSendMessage(job: JobSchedule): job is JobScheduleSendMessage {
+function apkhjobsndmssg(job: JobSchedule): job is JobScheduleSendMessage {
   return job.jenis === 'send_message' && Boolean((job as JobScheduleSendMessage).sendMessage);
 }
 
-function pastikanProgressSendMessage(job: JobScheduleSendMessage): SendMessageProgress {
+function pstknprgrsssndmssg(job: JobScheduleSendMessage): SendMessageProgress {
   if (!job.sendMessage.progress) {
     job.sendMessage.progress = {
       initialSent: false,
@@ -96,22 +94,22 @@ function pastikanProgressSendMessage(job: JobScheduleSendMessage): SendMessagePr
   return job.sendMessage.progress;
 }
 
-function tandaiJobGagal(job: JobSchedule, pesan: string, now: number): void {
+function tndjobggl(job: JobSchedule, pesan: string, now: number): void {
   job.status = 'failed';
   job.terakhirError = pesan;
   job.selesaiMs = now;
   job.berikutnyaCobaMs = undefined;
 }
 
-async function tandaiSessionTidakSinkron(userId: string, pesanError: string): Promise<void> {
-  const now = sekarangMs();
+async function tndsssntdksnkrn(userId: string, pesanError: string): Promise<void> {
+  const now = skrngms();
   const terakhir = terakhirLogSessionDesyncPerUser.get(userId) || 0;
   if (now - terakhir < intervalSessionDesyncLogMs) return;
   terakhirLogSessionDesyncPerUser.set(userId, now);
 
-  await ubahDatabase((db) => {
+  await ubhdtbs((db) => {
     if (!db.waByUser[userId]) {
-      db.waByUser[userId] = buatStatusWaAwal(now);
+      db.waByUser[userId] = buatsttswaawl(now);
     }
 
     db.waByUser[userId].status = 'menghubungkan';
@@ -119,88 +117,98 @@ async function tandaiSessionTidakSinkron(userId: string, pesanError: string): Pr
     db.waByUser[userId].terakhirUpdateMs = now;
   }).catch(() => null);
 
-  await tambahLog('wa_session_desync', {
+  await tmbhlog('wa_session_desync', {
     error: pesanError,
     waktuMs: now,
   }, userId).catch(() => null);
 }
 
-function pasangHandlerShutdown(aksiLepas: () => Promise<void>): void {
+function psnghndlrshtdwn(aksiLepas: () => Promise<void>): void {
   if (sudahPasangHandlerShutdown) return;
   sudahPasangHandlerShutdown = true;
 
   let sedangLepas = false;
-  const lepasSekali = async (): Promise<void> => {
+  const lpsskl = async (): Promise<void> => {
     if (sedangLepas) return;
     sedangLepas = true;
     await aksiLepas().catch(() => null);
   };
 
   process.once('SIGINT', () => {
-    void lepasSekali().finally(() => process.exit(0));
+    void lpsskl().finally(() => process.exit(0));
   });
 
   process.once('SIGTERM', () => {
-    void lepasSekali().finally(() => process.exit(0));
+    void lpsskl().finally(() => process.exit(0));
   });
 
   process.once('exit', () => {
-    void lepasSekali();
+    void lpsskl();
   });
 }
 
-// Fungsi ini membaca env untuk menentukan apakah file media dihapus setelah job selesai.
-function bolehHapusMediaSetelahSelesai(): boolean {
-  return String(process.env.HAPUS_MEDIA_SETELAH_SELESAI || '0') === '1';
-}
-
-function ambilDaftarPathMedia(job: JobSchedule): string[] {
+function ambldftrpthmedia(job: JobSchedule): string[] {
   const daftar = new Set<string>();
 
   if (job.media?.pathRelatif) {
     daftar.add(job.media.pathRelatif);
   }
 
-  if (apakahJobSendMessage(job) && job.sendMessage.media?.pathRelatif) {
+  if (apkhjobsndmssg(job) && job.sendMessage.media?.pathRelatif) {
     daftar.add(job.sendMessage.media.pathRelatif);
   }
 
   return [...daftar];
 }
 
-// Fungsi ini mencoba menghapus file media, tapi tidak melempar error kalau gagal.
-async function cobaHapusMedia(job: JobSchedule): Promise<void> {
-  if (!bolehHapusMediaSetelahSelesai()) return;
+function jbsls(job: JobSchedule): boolean {
+  return job.status === 'success' || job.status === 'cancel';
+}
 
-  const daftarPath = ambilDaftarPathMedia(job);
-  for (const pathRelatif of daftarPath) {
+async function autoadptmedia(jobId: string, userId: string): Promise<void> {
+  const db = await bacadtbs();
+  const job = db.job.find((item) => item.id === jobId && item.userId === userId);
+  if (!job) return;
+  if (!jbsls(job)) return;
+
+  const kandidat = ambldftrpthmedia(job);
+  if (kandidat.length === 0) return;
+
+  const dipakaiAktif = new Set<string>();
+  for (const item of db.job) {
+    if (item.id === jobId && item.userId === userId) continue;
+    if (jbsls(item)) continue;
+    for (const pathRelatif of ambldftrpthmedia(item)) {
+      dipakaiAktif.add(pathRelatif);
+    }
+  }
+
+  for (const pathRelatif of kandidat) {
+    if (dipakaiAktif.has(pathRelatif)) continue;
     try {
-      const pathAbs = ubahPathRelatifKeAbsolut(pathRelatif);
+      const pathAbs = ubhpthrltfkeabslt(pathRelatif);
       await fs.unlink(pathAbs);
     } catch {
-      // abaikan
     }
   }
 }
 
-// Fungsi ini memproses job yang sudah kadaluarsa (melewati window 2).
-async function batalkanKalauKadaluarsa(jobId: string, userId: string, alasan: string): Promise<void> {
-  await ubahDatabase((db) => {
+async function btlknkalaukdlrs(jobId: string, userId: string, alasan: string): Promise<void> {
+  await ubhdtbs((db) => {
     const job = db.job.find((j) => j.id === jobId && j.userId === userId);
     if (!job) return;
     if (job.status === 'success' || job.status === 'cancel') return;
 
     job.status = 'cancel';
     job.terakhirError = alasan;
-    job.selesaiMs = sekarangMs();
+    job.selesaiMs = skrngms();
     job.berikutnyaCobaMs = undefined;
   });
 
-  await tambahLog('cancel_job', { id: jobId, alasan }, userId);
+  await tmbhlog('cancel_job', { id: jobId, alasan }, userId);
 }
 
-// Fungsi ini menjalankan 1 percobaan kirim status untuk 1 job wa_status.
-async function cobaKirimSatuJobStatus(
+async function cobakrmsatujobstts(
   pengirim: PengirimWhatsapp,
   jobId: string,
   userId: string,
@@ -210,19 +218,17 @@ async function cobaKirimSatuJobStatus(
   if (sedangDiproses.has(keyProses)) return;
   sedangDiproses.add(keyProses);
 
-  const now = sekarangMs();
+  const now = skrngms();
 
-  // Ambil snapshot job + tandai running + increment attempt.
   let snapshot: JobScheduleWaStatus | null = null;
 
-  await ubahDatabase((db) => {
+  await ubhdtbs((db) => {
     const job = db.job.find((j) => j.id === jobId && j.userId === userId);
     if (!job) return;
-    if (!jobMasihAktif(job)) return;
-    if (!apakahJobWaStatus(job)) return;
+    if (!jobmshaktf(job)) return;
+    if (!apkhjobwastts(job)) return;
 
-    // Jangan kirim kalau belum waktunya (double-check).
-    const tahap = tentukanTahap(job, now);
+    const tahap = tntknthp(job, now);
     if (tahap === 'belum_waktu' || tahap === 'tunggu_10_menit') return;
     if (tahap === 'kadaluarsa') return;
 
@@ -240,44 +246,43 @@ async function cobaKirimSatuJobStatus(
   }
 
   try {
-    await pengirim.kirimStatusDariJob(snapshot);
+    await pengirim.krmsttsdarijob(snapshot);
 
-    await ubahDatabase((db) => {
+    await ubhdtbs((db) => {
       const job = db.job.find((j) => j.id === jobId && j.userId === userId);
       if (!job) return;
 
       job.status = 'success';
-      job.selesaiMs = sekarangMs();
+      job.selesaiMs = skrngms();
       job.terakhirError = undefined;
       job.berikutnyaCobaMs = undefined;
     });
 
-    // Cleanup optional
-    await cobaHapusMedia(snapshot);
+    await autoadptmedia(jobId, userId);
   } catch (err) {
     const pesan = err instanceof Error ? err.message : String(err);
 
-    await tambahLog('kirim_status_gagal', {
+    await tmbhlog('kirim_status_gagal', {
       jobId,
       error: pesan,
     }, userId).catch(() => null);
 
-    if (apakahSessionTidakSinkron(err)) {
-      await tandaiSessionTidakSinkron(userId, pesan);
+    if (apkhsssntdksnkrn(err)) {
+      await tndsssntdksnkrn(userId, pesan);
     }
 
-    await ubahDatabase((db) => {
+    await ubhdtbs((db) => {
       const job = db.job.find((j) => j.id === jobId && j.userId === userId);
       if (!job) return;
-      if (!jobMasihAktif(job)) return;
-      if (!apakahJobWaStatus(job)) return;
+      if (!jobmshaktf(job)) return;
+      if (!apkhjobwastts(job)) return;
 
       job.status = 'failed';
       job.terakhirError = pesan;
 
-      const akhir = ambilAkhirWindowAktif(job, now);
+      const akhir = amblakhrwndwaktf(job, now);
       if (akhir) {
-        const next = hitungBerikutnyaCoba(now, akhir, intervalRetryDalamWindowMs);
+        const next = htngbrktnycoba(now, akhir, intervalRetryDalamWindowMs);
         job.berikutnyaCobaMs = next ?? undefined;
       } else {
         job.berikutnyaCobaMs = undefined;
@@ -309,8 +314,8 @@ type AksiSendMessage =
       wait: SendMessageWaitingReply;
     };
 
-async function prosesJobSendMessage(
-  pengirim: Pick<PengirimWhatsapp, 'kirimPesanLangsung' | 'daftarPesanPribadiSejak'>,
+async function prssjobsndmssg(
+  pengirim: Pick<PengirimWhatsapp, 'krmpsnlngsng' | 'dftrpsnprbdsjk'>,
   jobId: string,
   userId: string,
   sedangDiproses: Set<string>,
@@ -319,21 +324,22 @@ async function prosesJobSendMessage(
   if (sedangDiproses.has(keyProses)) return;
   sedangDiproses.add(keyProses);
 
-  const now = sekarangMs();
+  const now = skrngms();
   const aksiRef: { value: AksiSendMessage } = { value: { tipe: 'none' } };
+  let prlubrshmedia = false;
 
-  await ubahDatabase((db) => {
+  await ubhdtbs((db) => {
     const job = db.job.find((item) => item.id === jobId && item.userId === userId);
     if (!job) return;
-    if (!jobMasihAktif(job)) return;
-    if (!apakahJobSendMessage(job)) return;
+    if (!jobmshaktf(job)) return;
+    if (!apkhjobsndmssg(job)) return;
 
     if (job.status === 'queued') {
       if (now < job.targetMs) return;
       job.status = 'running';
     }
 
-    const progress = pastikanProgressSendMessage(job);
+    const progress = pstknprgrsssndmssg(job);
     if (job.berikutnyaCobaMs && now < job.berikutnyaCobaMs) return;
     if (job.berikutnyaCobaMs && now >= job.berikutnyaCobaMs) {
       job.berikutnyaCobaMs = undefined;
@@ -375,7 +381,7 @@ async function prosesJobSendMessage(
       const idx = Number(progress.pendingSend.blockIndex);
       const block = Number.isInteger(idx) ? job.sendMessage.blok[idx] : null;
       if (!block || block.jenis !== 'send_message') {
-        tandaiJobGagal(job, 'Block send_message tidak valid.', now);
+        tndjobggl(job, 'Block send_message tidak valid.', now);
         progress.pendingSend = undefined;
         return;
       }
@@ -423,13 +429,14 @@ async function prosesJobSendMessage(
       job.selesaiMs = now;
       job.terakhirError = undefined;
       job.berikutnyaCobaMs = undefined;
+      prlubrshmedia = true;
       return;
     }
 
     if (block.jenis === 'delay') {
-      const delayMs = ubahDurasiKeMs(block.durasi.jam, block.durasi.menit, block.durasi.detik);
+      const delayMs = ubhdrskems(block.durasi.jam, block.durasi.menit, block.durasi.detik);
       if (delayMs <= 0) {
-        tandaiJobGagal(job, 'Delay block harus lebih dari 0.', now);
+        tndjobggl(job, 'Delay block harus lebih dari 0.', now);
         return;
       }
       progress.nextBlockIndex += 1;
@@ -468,19 +475,24 @@ async function prosesJobSendMessage(
     };
   });
 
+  if (prlubrshmedia) {
+    await autoadptmedia(jobId, userId);
+  }
+
   try {
     const aksi = aksiRef.value;
     if (aksi.tipe === 'kirim') {
-      await pengirim.kirimPesanLangsung(aksi.opsi);
+      await pengirim.krmpsnlngsng(aksi.opsi);
 
-      const nowSukses = sekarangMs();
-      await ubahDatabase((db) => {
+      const nowSukses = skrngms();
+      let prlubrshmedia2 = false;
+      await ubhdtbs((db) => {
         const job = db.job.find((item) => item.id === jobId && item.userId === userId);
         if (!job) return;
-        if (!jobMasihAktif(job)) return;
-        if (!apakahJobSendMessage(job)) return;
+        if (!jobmshaktf(job)) return;
+        if (!apkhjobsndmssg(job)) return;
 
-        const progress = pastikanProgressSendMessage(job);
+        const progress = pstknprgrsssndmssg(job);
         const pending = progress.pendingSend;
         if (!pending) return;
 
@@ -503,35 +515,39 @@ async function prosesJobSendMessage(
         if (nextBlockIndex >= job.sendMessage.blok.length) {
           job.status = 'success';
           job.selesaiMs = nowSukses;
+          prlubrshmedia2 = true;
         }
       });
+      if (prlubrshmedia2) {
+        await autoadptmedia(jobId, userId);
+      }
       return;
     }
 
     if (aksi.tipe === 'cek_wait_reply') {
-      const jid = ubahNomorKeJid(aksi.nomorTujuan);
-      const nowCek = sekarangMs();
+      const jid = ubhnmrkejid(aksi.nomorTujuan);
+      const nowCek = skrngms();
 
       if (!jid) {
-        await ubahDatabase((db) => {
+        await ubhdtbs((db) => {
           const job = db.job.find((item) => item.id === jobId && item.userId === userId);
-          if (!job || !jobMasihAktif(job)) return;
-          tandaiJobGagal(job, 'Nomor tujuan tidak valid.', nowCek);
+          if (!job || !jobmshaktf(job)) return;
+          tndjobggl(job, 'Nomor tujuan tidak valid.', nowCek);
         });
         return;
       }
 
-      const daftarPesan = pengirim.daftarPesanPribadiSejak(jid, aksi.wait.startedAtMs);
-      const pesanCocok = daftarPesan.find((item) => cocokWaitReply(item.teks, aksi.wait));
+      const daftarPesan = pengirim.dftrpsnprbdsjk(jid, aksi.wait.startedAtMs);
+      const pesanCocok = daftarPesan.find((item) => cckwaitrply(item.teks, aksi.wait));
 
       if (pesanCocok) {
-        await ubahDatabase((db) => {
+        await ubhdtbs((db) => {
           const job = db.job.find((item) => item.id === jobId && item.userId === userId);
           if (!job) return;
-          if (!jobMasihAktif(job)) return;
-          if (!apakahJobSendMessage(job)) return;
+          if (!jobmshaktf(job)) return;
+          if (!apkhjobsndmssg(job)) return;
 
-          const progress = pastikanProgressSendMessage(job);
+          const progress = pstknprgrsssndmssg(job);
           if (!progress.waitingReply) return;
           if (progress.waitingReply.startedAtMs !== aksi.wait.startedAtMs) return;
 
@@ -545,18 +561,18 @@ async function prosesJobSendMessage(
       }
 
       if (nowCek > aksi.wait.timeoutAtMs) {
-        await ubahDatabase((db) => {
+        await ubhdtbs((db) => {
           const job = db.job.find((item) => item.id === jobId && item.userId === userId);
           if (!job) return;
-          if (!jobMasihAktif(job)) return;
-          if (!apakahJobSendMessage(job)) return;
+          if (!jobmshaktf(job)) return;
+          if (!apkhjobsndmssg(job)) return;
 
-          const progress = pastikanProgressSendMessage(job);
+          const progress = pstknprgrsssndmssg(job);
           progress.waitingReply = undefined;
-          tandaiJobGagal(job, 'Wait reply timeout (24h).', nowCek);
+          tndjobggl(job, 'Wait reply timeout (24h).', nowCek);
         });
 
-        await tambahLog('wait_reply_timeout', {
+        await tmbhlog('wait_reply_timeout', {
           jobId,
           nomorTujuan: aksi.nomorTujuan,
           wait: aksi.wait,
@@ -565,23 +581,23 @@ async function prosesJobSendMessage(
     }
   } catch (err) {
     const pesan = err instanceof Error ? err.message : String(err);
-    const nowGagal = sekarangMs();
+    const nowGagal = skrngms();
 
-    if (apakahSessionTidakSinkron(err)) {
-      await tandaiSessionTidakSinkron(userId, pesan);
+    if (apkhsssntdksnkrn(err)) {
+      await tndsssntdksnkrn(userId, pesan);
     }
 
-    await ubahDatabase((db) => {
+    await ubhdtbs((db) => {
       const job = db.job.find((item) => item.id === jobId && item.userId === userId);
       if (!job) return;
-      if (!jobMasihAktif(job)) return;
-      if (!apakahJobSendMessage(job)) return;
+      if (!jobmshaktf(job)) return;
+      if (!apkhjobsndmssg(job)) return;
 
-      const progress = pastikanProgressSendMessage(job);
+      const progress = pstknprgrsssndmssg(job);
       const pending = progress.pendingSend;
       if (!pending) return;
 
-      const retry = hitungRetrySendMessage(
+      const retry = htngrtrysndmssg(
         pending.retryCount,
         nowGagal,
         intervalRetrySendMessageMs,
@@ -589,7 +605,7 @@ async function prosesJobSendMessage(
       );
       if (!retry.bisaLanjut) {
         progress.pendingSend = undefined;
-        tandaiJobGagal(job, pesan, nowGagal);
+        tndjobggl(job, pesan, nowGagal);
         return;
       }
 
@@ -605,66 +621,61 @@ async function prosesJobSendMessage(
   }
 }
 
-// Fungsi ini memproses semua job secara periodik.
-async function prosesSemuaJob(
+async function prsssemuajob(
   pengirimByUser: Map<string, PengirimWhatsapp>,
   sedangDiproses: Set<string>,
 ): Promise<void> {
-  const now = sekarangMs();
-  const db = await bacaDatabase();
+  const now = skrngms();
+  const db = await bacadtbs();
 
   for (const job of db.job) {
-    if (!jobMasihAktif(job)) continue;
+    if (!jobmshaktf(job)) continue;
 
     const pengirim = pengirimByUser.get(job.userId);
     if (!pengirim) continue;
 
-    if (apakahJobSendMessage(job)) {
-      await prosesJobSendMessage(pengirim, job.id, job.userId, sedangDiproses);
+    if (apkhjobsndmssg(job)) {
+      await prssjobsndmssg(pengirim, job.id, job.userId, sedangDiproses);
       continue;
     }
 
-    if (!apakahJobWaStatus(job)) continue;
+    if (!apkhjobwastts(job)) continue;
 
-    const tahap = tentukanTahap(job, now);
+    const tahap = tntknthp(job, now);
 
-    // Kadaluarsa -> cancel
     if (tahap === 'kadaluarsa') {
-      await batalkanKalauKadaluarsa(job.id, job.userId, 'Window pengiriman habis.');
-      await cobaHapusMedia(job);
+      await btlknkalaukdlrs(job.id, job.userId, 'Window pengiriman habis.');
+      await autoadptmedia(job.id, job.userId);
       continue;
     }
 
-    // Masa tunggu 10 menit -> set berikutnyaCobaMs ke awal window 2 (sekali saja)
     if (tahap === 'tunggu_10_menit') {
       if (!job.berikutnyaCobaMs || job.berikutnyaCobaMs < job.jendela.jendela2MulaiMs) {
-        await ubahDatabase((db2) => {
+        await ubhdtbs((db2) => {
           const j = db2.job.find((x) => x.id === job.id && x.userId === job.userId);
           if (!j) return;
-          if (!jobMasihAktif(j)) return;
-          if (!apakahJobWaStatus(j)) return;
+          if (!jobmshaktf(j)) return;
+          if (!apkhjobwastts(j)) return;
           j.berikutnyaCobaMs = j.jendela.jendela2MulaiMs;
         });
       }
       continue;
     }
 
-    // Dalam window aktif -> coba kirim kalau waktunya.
     if (tahap === 'jendela_1' || tahap === 'jendela_2') {
       if (job.berikutnyaCobaMs && now < job.berikutnyaCobaMs) continue;
-      await cobaKirimSatuJobStatus(pengirim, job.id, job.userId, sedangDiproses);
+      await cobakrmsatujobstts(pengirim, job.id, job.userId, sedangDiproses);
       continue;
     }
 
-    // belum waktu -> skip
   }
 }
 
-async function sinkronkanPengirimWhatsapp(
+async function snkrnknpngrmwhtspp(
   pengirimByUser: Map<string, PengirimWhatsapp>,
   sedangInisialisasi: Set<string>,
 ): Promise<void> {
-  const db = await bacaDatabase();
+  const db = await bacadtbs();
   const daftarUserId = db.users.map((u) => u.id);
 
   for (const userId of daftarUserId) {
@@ -672,14 +683,14 @@ async function sinkronkanPengirimWhatsapp(
     if (sedangInisialisasi.has(userId)) continue;
 
     sedangInisialisasi.add(userId);
-    void sambungkanWhatsapp(userId)
+    void smbngknwhtspp(userId)
       .then((pengirim) => {
         pengirimByUser.set(userId, pengirim);
       })
       .catch((err) => {
-        void tambahLog('wa_status', {
+        void tmbhlog('wa_status', {
           status: 'menghubungkan',
-          catatan: `Gagal inisialisasi socket user: ${ringkasError(err)}`,
+          catatan: `Gagal inisialisasi socket user: ${rngkserrr(err)}`,
         }, userId).catch(() => null);
       })
       .finally(() => {
@@ -688,17 +699,16 @@ async function sinkronkanPengirimWhatsapp(
   }
 }
 
-// Fungsi ini menjalankan loop scheduler tanpa cron (polling + timer).
-export async function jalankanWorker(): Promise<void> {
+export async function jlnknwrkr(): Promise<void> {
   try {
-    const guard = await ambilGuardInstance('worker');
+    const guard = await amblgrdinstnc('worker');
 
-    pasangHandlerShutdown(async () => {
+    psnghndlrshtdwn(async () => {
       await guard.lepas();
     });
   } catch (err) {
     if (err instanceof InstanceLockedError) {
-      await tambahLog('instance_guard', {
+      await tmbhlog('instance_guard', {
         proses: 'worker',
         status: 'ditolak',
         pesan: err.message,
@@ -712,10 +722,10 @@ export async function jalankanWorker(): Promise<void> {
   const sedangDiproses = new Set<string>();
   let tickBerjalan = false;
 
-  await sinkronkanPengirimWhatsapp(pengirimByUser, sedangInisialisasiUser);
+  await snkrnknpngrmwhtspp(pengirimByUser, sedangInisialisasiUser);
 
   setInterval(() => {
-    void sinkronkanPengirimWhatsapp(pengirimByUser, sedangInisialisasiUser).catch(() => null);
+    void snkrnknpngrmwhtspp(pengirimByUser, sedangInisialisasiUser).catch(() => null);
   }, intervalSyncPengirimMs);
 
   // eslint-disable-next-line no-console
@@ -723,12 +733,12 @@ export async function jalankanWorker(): Promise<void> {
 
   setInterval(() => {
     if (tickBerjalan) {
-      const now = sekarangMs();
+      const now = skrngms();
       if (now - terakhirLogSchedulerGuardMs >= intervalLogGuardMs) {
         terakhirLogSchedulerGuardMs = now;
         // eslint-disable-next-line no-console
         console.warn('[worker] skip tick: loop sebelumnya masih berjalan');
-        void tambahLog('scheduler_guard', {
+        void tmbhlog('scheduler_guard', {
           pesan: 'Skip tick karena proses loop sebelumnya belum selesai.',
           waktuMs: now,
         }).catch(() => null);
@@ -737,13 +747,13 @@ export async function jalankanWorker(): Promise<void> {
     }
 
     tickBerjalan = true;
-    prosesSemuaJob(pengirimByUser, sedangDiproses)
+    prsssemuajob(pengirimByUser, sedangDiproses)
       .catch((err) => {
         if (err instanceof DbBusyError) {
-          const now = sekarangMs();
+          const now = skrngms();
           if (now - terakhirLogDbBusyMs >= intervalLogGuardMs) {
             terakhirLogDbBusyMs = now;
-            void tambahLog('db_busy', {
+            void tmbhlog('db_busy', {
               proses: 'worker_loop',
               pesan: err.message,
               waktuMs: now,
@@ -753,7 +763,7 @@ export async function jalankanWorker(): Promise<void> {
         }
 
         // eslint-disable-next-line no-console
-        console.error('[worker] error di loop:', ringkasError(err));
+        console.error('[worker] error di loop:', rngkserrr(err));
       })
       .finally(() => {
         tickBerjalan = false;
@@ -761,9 +771,8 @@ export async function jalankanWorker(): Promise<void> {
   }, intervalPollingMs);
 }
 
-// Jalankan kalau file ini dieksekusi langsung.
 if (require.main === module) {
-  jalankanWorker().catch((err) => {
+  jlnknwrkr().catch((err) => {
     // eslint-disable-next-line no-console
     console.error('[worker] gagal start:', err);
     process.exit(1);

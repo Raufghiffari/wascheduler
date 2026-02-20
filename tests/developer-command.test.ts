@@ -1,22 +1,20 @@
-// tests/developer-command.test.ts
-// Test untuk normalize + resolver Developer Command.
 
 import { describe, expect, it } from 'vitest';
-import { normalisasiDeveloperCommand, resolveDeveloperCommand } from '../shared/developer-command';
+import { nrmlssdvlprcmmnd, rslvdvlprcmmnd } from '../shared/developer-command';
 
-describe('normalisasiDeveloperCommand', () => {
+describe('nrmlssdvlprcmmnd', () => {
   it('trim + case-insensitive', () => {
-    expect(normalisasiDeveloperCommand('  @MyPreset.1  ')).toBe('@mypreset.1');
+    expect(nrmlssdvlprcmmnd('  @MyPreset.1  ')).toBe('@mypreset.1');
   });
 
   it('mengembalikan null jika command tidak valid', () => {
-    expect(normalisasiDeveloperCommand('@mypreset.9')).toBeNull();
+    expect(nrmlssdvlprcmmnd('@mypreset.9')).toBeNull();
   });
 });
 
-describe('resolveDeveloperCommand', () => {
+describe('rslvdvlprcmmnd', () => {
   it('@private.all hanya self', () => {
-    const hasil = resolveDeveloperCommand(
+    const hasil = rslvdvlprcmmnd(
       '@private.all',
       ['628111@s.whatsapp.net', '628222@s.whatsapp.net'],
       '628999@s.whatsapp.net',
@@ -32,7 +30,7 @@ describe('resolveDeveloperCommand', () => {
       '628777000111@s.whatsapp.net',
     ];
 
-    const hasil = resolveDeveloperCommand('@mypreset.1', semua, '628999@s.whatsapp.net');
+    const hasil = rslvdvlprcmmnd('@mypreset.1', semua, '628999@s.whatsapp.net');
 
     expect(hasil).toContain('628999@s.whatsapp.net');
     expect(hasil).toContain('628777000111@s.whatsapp.net');
@@ -47,7 +45,7 @@ describe('resolveDeveloperCommand', () => {
       '6281234567890@s.whatsapp.net',
     ];
 
-    const hasil = resolveDeveloperCommand('@mypreset.2', semua, '628999@s.whatsapp.net');
+    const hasil = rslvdvlprcmmnd('@mypreset.2', semua, '628999@s.whatsapp.net');
 
     expect(hasil).toContain('628999@s.whatsapp.net');
     expect(hasil).toContain('6281234567890@s.whatsapp.net');

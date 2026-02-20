@@ -5,12 +5,12 @@ import { createRoot } from 'react-dom/client';
 type LoginView = 'intro' | 'signin';
 type ResLogin = { ok: boolean; nextRoute?: string; pesan?: string };
 
-function cekViewportMobile(): boolean {
+function cekvwprtmbl(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
   return window.matchMedia('(max-width: 820px)').matches;
 }
 
-async function kirimLogin(username: string, password: string): Promise<ResLogin> {
+async function krmlgn(username: string, password: string): Promise<ResLogin> {
   const res = await fetch('/api/login', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -20,10 +20,10 @@ async function kirimLogin(username: string, password: string): Promise<ResLogin>
   return (await res.json()) as ResLogin;
 }
 
-function LoginApp(): React.JSX.Element {
+function Lgnapp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
-  const [isMobile, setIsMobile] = useState(() => cekViewportMobile());
-  const [view, setView] = useState<LoginView>(() => (cekViewportMobile() ? 'intro' : 'signin'));
+  const [isMobile, setIsMobile] = useState(() => cekvwprtmbl());
+  const [view, setView] = useState<LoginView>(() => (cekvwprtmbl() ? 'intro' : 'signin'));
   const [heroImageBroken, setHeroImageBroken] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -42,15 +42,15 @@ function LoginApp(): React.JSX.Element {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
 
     const media = window.matchMedia('(max-width: 820px)');
-    const sync = (): void => {
+    const syncx = (): void => {
       const mobile = media.matches;
       setIsMobile(mobile);
       setView(mobile ? 'intro' : 'signin');
     };
 
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
+    syncx();
+    media.addEventListener('change', syncx);
+    return () => media.removeEventListener('change', syncx);
   }, []);
 
   const spring = useMemo(
@@ -68,7 +68,7 @@ function LoginApp(): React.JSX.Element {
 
   const heroImageSrc = '/assets/auth-hero.svg?v=2';
 
-  async function aksiMasuk(): Promise<void> {
+  async function aksmsk(): Promise<void> {
     const user = username.trim();
     const pass = password;
     if (!user || !pass) {
@@ -81,7 +81,7 @@ function LoginApp(): React.JSX.Element {
     setErrorText('');
 
     try {
-      const hasil = await kirimLogin(user, pass);
+      const hasil = await krmlgn(user, pass);
       if (!hasil.ok) {
         setErrorText(hasil.pesan || 'Login failed');
         setToast('Login failed');
@@ -100,7 +100,7 @@ function LoginApp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--login">
-      <motion.main
+      <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -139,7 +139,7 @@ function LoginApp(): React.JSX.Element {
                 exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
                 transition={spring}
               >
-                <div className="auth-intro-main">
+                <div className="auth-intro-mnx">
                   {heroImageBroken ? (
                     <div className="auth-hero-fallback auth-hero-fallback--intro" aria-hidden="true">
                       <span>N</span>
@@ -211,7 +211,7 @@ function LoginApp(): React.JSX.Element {
                   className="auth-form"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    void aksiMasuk();
+                    void aksmsk();
                   }}
                 >
                   <label htmlFor="login-username" className="auth-visually-hidden">
@@ -303,7 +303,7 @@ function LoginApp(): React.JSX.Element {
             )}
           </AnimatePresence>
         </section>
-      </motion.main>
+      </motion.mnx>
 
       <AnimatePresence>
         {toast ? (
@@ -324,5 +324,5 @@ function LoginApp(): React.JSX.Element {
 
 const host = document.getElementById('app-login');
 if (host) {
-  createRoot(host).render(<LoginApp />);
+  createRoot(host).render(<Lgnapp />);
 }

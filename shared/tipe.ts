@@ -1,5 +1,3 @@
-// shared/tipe.ts
-// File ini berisi tipe data (TypeScript) yang dipakai bareng oleh server & worker.
 
 export type StatusJob = 'queued' | 'running' | 'success' | 'failed' | 'cancel';
 export type JenisJob = 'wa_status' | 'send_message';
@@ -30,7 +28,7 @@ export type AkunUser = {
 
 export type InfoMedia = {
   namaAsli: string;
-  pathRelatif: string; // contoh: media/user123/abc.jpg
+  pathRelatif: string;
   mime: string;
   tipe: TipeMedia;
   ukuranByte: number;
@@ -38,11 +36,7 @@ export type InfoMedia = {
 
 export type InfoAudience = {
   tipe: TipeAudience;
-
-  // Untuk 'my_contacts_excluded' dan 'only_share_with'
-  daftarNomor?: string[]; // format: 62812xxxx (tanpa +)
-
-  // Untuk 'developer_command'
+  daftarNomor?: string[];
   command?: DeveloperCommand;
 };
 
@@ -108,7 +102,7 @@ export type SendMessageProgress = {
 };
 
 export type InfoSendMessage = {
-  nomorTujuan: string; // format: 62812xxxx (tanpa +)
+  nomorTujuan: string;
   pesanAwal: string;
   media?: InfoMedia;
   blok: BlokSendMessage[];
@@ -121,7 +115,6 @@ type JobScheduleBase = {
   dibuatPadaMs: number;
   jenis?: JenisJob;
 
-  // Waktu target hasil dari (sekarang + durasi)
   targetMs: number;
 
   status: StatusJob;
@@ -135,7 +128,7 @@ type JobScheduleBase = {
 };
 
 export type JobScheduleWaStatus = JobScheduleBase & {
-  jenis?: 'wa_status'; // undefined = kompatibilitas data lama
+  jenis?: 'wa_status';
   jendela: JendelaKirim;
   media: InfoMedia;
   caption?: string;
@@ -188,7 +181,6 @@ export type LogBaris = {
     | 'wait_reply_timeout'
     | 'wa_pesan_masuk';
 
-  // Detail bebas tapi tetap JSON
   detail: Record<string, unknown>;
 };
 

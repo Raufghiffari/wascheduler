@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 type ResRegister = { ok: boolean; nextRoute?: string; pesan?: string };
 
-function buatEncryptorAcak(): string {
+function buatencryptrack(): string {
   const alfabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
   let hasil = '';
   for (let i = 0; i < 24; i += 1) {
@@ -14,7 +14,7 @@ function buatEncryptorAcak(): string {
   return hasil;
 }
 
-async function kirimRegister(payload: {
+async function krmrgstr(payload: {
   name: string;
   password: string;
   developerAccess: string;
@@ -28,7 +28,7 @@ async function kirimRegister(payload: {
   return (await res.json()) as ResRegister;
 }
 
-function RegisterApp(): React.JSX.Element {
+function Rgstrapp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
   const [heroImageBroken, setHeroImageBroken] = useState(false);
   const [showAdvancedAccess, setShowAdvancedAccess] = useState(false);
@@ -62,7 +62,7 @@ function RegisterApp(): React.JSX.Element {
 
   const heroImageSrc = '/assets/auth-hero.svg?v=2';
 
-  async function aksiRegister(): Promise<void> {
+  async function aksrgstr(): Promise<void> {
     const nama = name.trim();
     const pass = password;
     const akses = developerAccess.trim();
@@ -77,11 +77,11 @@ function RegisterApp(): React.JSX.Element {
     setLoading(true);
     setErrorText('');
     try {
-      const hasil = await kirimRegister({
+      const hasil = await krmrgstr({
         name: nama,
         password: pass,
         developerAccess: akses,
-        encryptor: buatEncryptorAcak(),
+        encryptor: buatencryptrack(),
       });
 
       if (!hasil.ok) {
@@ -102,7 +102,7 @@ function RegisterApp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--register">
-      <motion.main
+      <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
         animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
@@ -163,7 +163,7 @@ function RegisterApp(): React.JSX.Element {
               className="auth-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                void aksiRegister();
+                void aksrgstr();
               }}
             >
               <label htmlFor="register-name" className="auth-visually-hidden">
@@ -307,7 +307,7 @@ function RegisterApp(): React.JSX.Element {
             </form>
           </motion.section>
         </section>
-      </motion.main>
+      </motion.mnx>
 
       <AnimatePresence>
         {toast ? (
@@ -328,5 +328,5 @@ function RegisterApp(): React.JSX.Element {
 
 const host = document.getElementById('app-register');
 if (host) {
-  createRoot(host).render(<RegisterApp />);
+  createRoot(host).render(<Rgstrapp />);
 }

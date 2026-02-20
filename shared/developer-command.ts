@@ -1,8 +1,6 @@
-// shared/developer-command.ts
-// Registry dan resolver untuk audience berbasis Developer Command.
 
 import type { DeveloperCommand } from './tipe';
-import { ubahNomorKeJid } from './util-nomor';
+import { ubhnmrkejid } from './util-nomor';
 
 const daftarCommand: DeveloperCommand[] = ['@private.all', '@mypreset.1', '@mypreset.2'];
 
@@ -24,16 +22,16 @@ const preset2: string[] = [
   '6285292383375',
 ];
 
-function normalisasiJid(jid: string): string {
+function nrmlssjid(jid: string): string {
   return String(jid || '').trim().toLowerCase();
 }
 
-function dedupeJid(jidList: string[]): string[] {
+function ddpjid(jidList: string[]): string[] {
   const hasil: string[] = [];
   const sudah = new Set<string>();
 
   for (const item of jidList) {
-    const key = normalisasiJid(item);
+    const key = nrmlssjid(item);
     if (!key || sudah.has(key)) continue;
     sudah.add(key);
     hasil.push(item);
@@ -42,34 +40,34 @@ function dedupeJid(jidList: string[]): string[] {
   return hasil;
 }
 
-function ubahPresetKeExcludeSet(daftarNomor: string[]): Set<string> {
+function ubhprstkeexcldset(daftarNomor: string[]): Set<string> {
   const set = new Set<string>();
 
   for (const nomor of daftarNomor) {
-    const jid = ubahNomorKeJid(nomor);
+    const jid = ubhnmrkejid(nomor);
     if (!jid) continue;
-    set.add(normalisasiJid(jid));
+    set.add(nrmlssjid(jid));
   }
 
   return set;
 }
 
-export function daftarDeveloperCommand(): DeveloperCommand[] {
+export function dftrdvlprcmmnd(): DeveloperCommand[] {
   return [...daftarCommand];
 }
 
-export function normalisasiDeveloperCommand(input: string): DeveloperCommand | null {
+export function nrmlssdvlprcmmnd(input: string): DeveloperCommand | null {
   const hasil = String(input || '').trim().toLowerCase();
   if (!hasil) return null;
   return (daftarCommand as string[]).includes(hasil) ? (hasil as DeveloperCommand) : null;
 }
 
-export function resolveDeveloperCommand(
+export function rslvdvlprcmmnd(
   commandInput: string,
   semuaKontakJid: string[],
   selfJid: string | null,
 ): string[] {
-  const command = normalisasiDeveloperCommand(commandInput);
+  const command = nrmlssdvlprcmmnd(commandInput);
   if (!command) {
     throw new Error('Developer command tidak valid.');
   }
@@ -83,11 +81,11 @@ export function resolveDeveloperCommand(
 
   const exclude =
     command === '@mypreset.1'
-      ? ubahPresetKeExcludeSet(preset1)
-      : ubahPresetKeExcludeSet(preset2);
+      ? ubhprstkeexcldset(preset1)
+      : ubhprstkeexcldset(preset2);
 
-  const terlihat = semuaKontakJid.filter((jid) => !exclude.has(normalisasiJid(jid)));
+  const terlihat = semuaKontakJid.filter((jid) => !exclude.has(nrmlssjid(jid)));
   const dasar = selfJid ? [selfJid] : [];
-  return dedupeJid([...dasar, ...terlihat]);
+  return ddpjid([...dasar, ...terlihat]);
 }
 

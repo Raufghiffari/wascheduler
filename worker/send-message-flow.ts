@@ -1,21 +1,21 @@
 import type { SendMessageWaitingReply } from '../shared/tipe';
 
-export function normalisasiReplyText(teks: string): string {
+export function nrmlssrplytxt(teks: string): string {
   return String(teks || '').trim().toLowerCase();
 }
 
-export function cocokWaitReply(teksMasuk: string, wait: SendMessageWaitingReply): boolean {
-  const rapi = normalisasiReplyText(teksMasuk);
+export function cckwaitrply(teksMasuk: string, wait: SendMessageWaitingReply): boolean {
+  const rapi = nrmlssrplytxt(teksMasuk);
   if (!rapi) return false;
 
   if (wait.mode === 'any') return true;
 
-  const expected = normalisasiReplyText(wait.expectedText || '');
+  const expected = nrmlssrplytxt(wait.expectedText || '');
   if (!expected) return false;
   return rapi === expected;
 }
 
-export function hitungRetrySendMessage(
+export function htngrtrysndmssg(
   retryCountSaatIni: number,
   nowMs: number,
   intervalMs: number,

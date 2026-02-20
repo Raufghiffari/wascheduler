@@ -13,12 +13,12 @@ const namaFileRuntimeDb = new Set([
   'worker.instance',
 ]);
 
-function ambilPesanError(err) {
+function amblpsnerrr(err) {
   if (err instanceof Error) return err.message;
   return String(err);
 }
 
-async function hapusRelatif(relatif) {
+async function hpsrltf(relatif) {
   const abs = path.join(akar, relatif);
   await rm(abs, {
     recursive: true,
@@ -28,7 +28,7 @@ async function hapusRelatif(relatif) {
   });
 }
 
-async function hapusBundleUi() {
+async function hpsbndlui() {
   let daftar = [];
   try {
     daftar = await readdir(targetAsetDir, { withFileTypes: true });
@@ -45,7 +45,7 @@ async function hapusBundleUi() {
   );
 }
 
-async function hapusRuntimeDb() {
+async function hpsrntmdb() {
   let daftar = [];
   try {
     daftar = await readdir(targetDbDir, { withFileTypes: true });
@@ -68,35 +68,35 @@ async function hapusRuntimeDb() {
   );
 }
 
-async function main() {
+async function mnx() {
   console.log('[reset] membersihkan runtime/build artifacts...');
   const gagal = [];
 
   for (const rel of targetDirektori) {
     try {
-      await hapusRelatif(rel);
+      await hpsrltf(rel);
       console.log(`[reset] removed ${rel}`);
     } catch (err) {
-      const pesan = ambilPesanError(err);
+      const pesan = amblpsnerrr(err);
       gagal.push(`${rel}: ${pesan}`);
       console.warn(`[reset] gagal hapus ${rel}: ${pesan}`);
     }
   }
 
   try {
-    await hapusRuntimeDb();
+    await hpsrntmdb();
     console.log('[reset] removed db runtime files');
   } catch (err) {
-    const pesan = ambilPesanError(err);
+    const pesan = amblpsnerrr(err);
     gagal.push(`db runtime files: ${pesan}`);
     console.warn(`[reset] gagal hapus db runtime files: ${pesan}`);
   }
 
   try {
-    await hapusBundleUi();
+    await hpsbndlui();
     console.log('[reset] removed public/assets/*.js');
   } catch (err) {
-    const pesan = ambilPesanError(err);
+    const pesan = amblpsnerrr(err);
     gagal.push(`public/assets/*.js: ${pesan}`);
     console.warn(`[reset] gagal hapus public/assets/*.js: ${pesan}`);
   }
@@ -110,7 +110,7 @@ async function main() {
   console.log('[reset] selesai. Jalankan "npm run build" sebelum start lagi.');
 }
 
-main().catch((err) => {
+mnx().catch((err) => {
   console.error('[reset] gagal:', err);
   process.exit(1);
 });

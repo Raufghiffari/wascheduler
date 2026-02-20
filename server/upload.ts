@@ -1,5 +1,3 @@
-// server/upload.ts
-// Modul upload media (foto/video) ke folder media/.
 
 import path from 'path';
 import fs from 'fs/promises';
@@ -17,31 +15,28 @@ const daftarMimeBoleh = new Set([
   'video/quicktime',
 ]);
 
-// Fungsi ini memastikan folder media/ ada.
-async function pastikanFolderMediaAda(): Promise<void> {
+async function pstknfldrmediaada(): Promise<void> {
   await fs.mkdir(lokasiFolderMedia, { recursive: true });
 }
 
-function ambilUserIdRequest(req: unknown): string {
+function amblusridrqst(req: unknown): string {
   if (!req || typeof req !== 'object') return '';
   const row = req as { session?: { userId?: unknown } };
   return String(row.session?.userId || '').trim();
 }
 
-// Fungsi ini membuat nama file aman & unik.
-function buatNamaFileUnik(namaAsli: string): string {
+function buatnamafileunk(namaAsli: string): string {
   const ext = path.extname(namaAsli) || '';
   const id = nanoid(12);
   return `${id}${ext}`;
 }
 
-// Fungsi ini membuat instance multer untuk menangani upload.
-export function buatUploaderMedia(): multer.Multer {
+export function buatupldrmedia(): multer.Multer {
   const storage = multer.diskStorage({
     destination: async (req, _file, cb) => {
       try {
-        await pastikanFolderMediaAda();
-        const userId = ambilUserIdRequest(req);
+        await pstknfldrmediaada();
+        const userId = amblusridrqst(req);
         if (!userId) {
           cb(new Error('Session user tidak valid.'), lokasiFolderMedia);
           return;
@@ -55,11 +50,11 @@ export function buatUploaderMedia(): multer.Multer {
       }
     },
     filename: (_req, file, cb) => {
-      cb(null, buatNamaFileUnik(file.originalname));
+      cb(null, buatnamafileunk(file.originalname));
     },
   });
 
-  const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
+  const filefltr: multer.Options['fileFilter'] = (_req, file, cb) => {
     if (daftarMimeBoleh.has(file.mimetype)) {
       cb(null, true);
       return;
@@ -69,22 +64,20 @@ export function buatUploaderMedia(): multer.Multer {
 
   return multer({
     storage,
-    fileFilter,
+    fileFilter: filefltr,
     limits: {
-      fileSize: 60 * 1024 * 1024, // 60MB, biar video masih masuk
+      fileSize: 60 * 1024 * 1024,
     },
   });
 }
 
-// Fungsi ini menebak tipe media sederhana dari mimetype.
-export function tebakTipeMedia(mimeType: string): 'foto' | 'video' | null {
+export function tbktipemedia(mimeType: string): 'foto' | 'video' | null {
   if (mimeType.startsWith('image/')) return 'foto';
   if (mimeType.startsWith('video/')) return 'video';
   return null;
 }
 
-// Fungsi ini memastikan mimetype terlihat masuk akal (fallback untuk beberapa device).
-export function rapikanMimeType(namaFile: string, mimetypeMasuk: string): string {
+export function rpknmimetyp(namaFile: string, mimetypeMasuk: string): string {
   if (mimetypeMasuk && mimetypeMasuk !== 'application/octet-stream') return mimetypeMasuk;
 
   const tebakan = mime.lookup(namaFile);
