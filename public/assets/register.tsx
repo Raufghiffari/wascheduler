@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
 import { DynamicIsland } from './dynamic-island';
@@ -41,7 +41,12 @@ function Rgstrapp(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [toast, setToast] = useState('');
+  const [islandIconMode, setIslandIconMode] = useState<'locked' | 'unlocked'>('locked');
+  const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('idle');
   const [islandShakeKey, setIslandShakeKey] = useState(0);
+  const [islandVisible, setIslandVisible] = useState(false);
+  const islandHideTimerRef = useRef<number | null>(null);
+  const islandSettleTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!toast) return;
@@ -64,14 +69,47 @@ function Rgstrapp(): React.JSX.Element {
 
   const heroImageSrc = '/assets/auth-hero.svg?v=2';
 
+  function resetIslandTimers(): void {
+    if (islandHideTimerRef.current !== null) {
+      window.clearTimeout(islandHideTimerRef.current);
+      islandHideTimerRef.current = null;
+    }
+    if (islandSettleTimerRef.current !== null) {
+      window.clearTimeout(islandSettleTimerRef.current);
+      islandSettleTimerRef.current = null;
+    }
+  }
+
+  useEffect(
+    () => () => {
+      resetIslandTimers();
+    },
+    [],
+  );
+
   function picuIslandError(): void {
+    resetIslandTimers();
+    setIslandIconMode('locked');
+    setIslandActivity('idle');
+    setIslandVisible(true);
     setIslandShakeKey((prev) => prev + 1);
+    islandHideTimerRef.current = window.setTimeout(
+      () => {
+        islandHideTimerRef.current = null;
+        setIslandVisible(false);
+      },
+      reduceMotion ? 680 : 1240,
+    );
   }
 
   async function aksrgstr(): Promise<void> {
     const nama = name.trim();
     const pass = password;
     const akses = developerAccess.trim();
+    resetIslandTimers();
+    setIslandIconMode('locked');
+    setIslandActivity('idle');
+    setIslandVisible(false);
 
     if (!nama || !pass || !akses) {
       if (!akses) setShowAdvancedAccess(true);
@@ -98,7 +136,18 @@ function Rgstrapp(): React.JSX.Element {
         return;
       }
 
+      resetIslandTimers();
+      setIslandIconMode('unlocked');
+      setIslandActivity('pulse');
+      setIslandVisible(true);
+      islandSettleTimerRef.current = window.setTimeout(() => {
+        islandSettleTimerRef.current = null;
+        setIslandActivity('idle');
+      }, reduceMotion ? 180 : 760);
       setToast('Register success');
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, reduceMotion ? 220 : 900);
+      });
       window.location.href = hasil.nextRoute || '/authorize';
     } catch (err) {
       setErrorText(err instanceof Error ? err.message : String(err));
@@ -111,7 +160,12 @@ function Rgstrapp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--register">
-      <DynamicIsland iconMode="locked" activity="idle" shakeKey={islandShakeKey} />
+      <DynamicIsland
+        iconMode={islandIconMode}
+        activity={islandActivity}
+        shakeKey={islandShakeKey}
+        visible={islandVisible}
+      />
       <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
@@ -128,12 +182,12 @@ function Rgstrapp(): React.JSX.Element {
               <img
                 src={heroImageSrc}
                 alt=""
-                className="auth-desktop-hero-image"
+                className="auth-desktop-hero-image auth-desktop-hero-image--register"
                 onError={() => setHeroImageBroken(true)}
               />
             )}
             <h2 className="auth-desktop-hero-title">Let's Create an Account</h2>
-            <p className="auth-desktop-hero-subtitle">Create your account then continue to authorize your WhatsApp.</p>
+            <p className="auth-desktop-hero-subtitle">Create your account then continue to authorize your Nchat</p>
             <div className="auth-dots auth-dots--desktop">
               <span className="auth-dot" />
               <span className="auth-dot" />
@@ -160,7 +214,7 @@ function Rgstrapp(): React.JSX.Element {
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
               </button>
-              <span className="auth-brand auth-brand--inline">Nchat</span>
+              <span className="auth-brand auth-brand--inline">Create New Account</span>
             </div>
 
             <h1 className="auth-heading auth-heading--register">
@@ -293,7 +347,7 @@ function Rgstrapp(): React.JSX.Element {
                   </div>
                 </>
               ) : (
-                <p className="auth-advanced-hint">Developer access code is required by admin.</p>
+                <p className="auth-advanced-hint"></p>
               )}
 
               <p className="auth-error">{errorText}</p>

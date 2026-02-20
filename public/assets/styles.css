@@ -1467,6 +1467,12 @@ h6 {
     height: auto;
   }
 
+  .auth-desktop-hero-image--register {
+    width: min(98%, 382px);
+    transform: scale(1.08);
+    transform-origin: center center;
+  }
+
   .auth-hero-fallback {
     width: min(88%, 336px);
     max-width: 336px;

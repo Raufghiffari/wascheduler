@@ -59,6 +59,9 @@ function Lgnapp(): React.JSX.Element {
   const [islandIconMode, setIslandIconMode] = useState<'locked' | 'unlocked'>('locked');
   const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('idle');
   const [islandShakeKey, setIslandShakeKey] = useState(0);
+  const [islandVisible, setIslandVisible] = useState(false);
+  const islandHideTimerRef = useRef<number | null>(null);
+  const islandSettleTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!toast) return;
@@ -94,17 +97,46 @@ function Lgnapp(): React.JSX.Element {
     [reduceMotion],
   );
 
+  function resetIslandTimers(): void {
+    if (islandHideTimerRef.current !== null) {
+      window.clearTimeout(islandHideTimerRef.current);
+      islandHideTimerRef.current = null;
+    }
+    if (islandSettleTimerRef.current !== null) {
+      window.clearTimeout(islandSettleTimerRef.current);
+      islandSettleTimerRef.current = null;
+    }
+  }
+
+  useEffect(
+    () => () => {
+      resetIslandTimers();
+    },
+    [],
+  );
+
   function picuIslandError(): void {
+    resetIslandTimers();
     setIslandIconMode('locked');
     setIslandActivity('idle');
+    setIslandVisible(true);
     setIslandShakeKey((prev) => prev + 1);
+    islandHideTimerRef.current = window.setTimeout(
+      () => {
+        islandHideTimerRef.current = null;
+        setIslandVisible(false);
+      },
+      reduceMotion ? 680 : 1240,
+    );
   }
 
   async function aksmsk(): Promise<void> {
     const user = username.trim();
     const pass = password;
+    resetIslandTimers();
     setIslandIconMode('locked');
     setIslandActivity('idle');
+    setIslandVisible(false);
 
     if (!user || !pass) {
       setErrorText('Username and password are required');
@@ -125,11 +157,17 @@ function Lgnapp(): React.JSX.Element {
         return;
       }
 
+      resetIslandTimers();
       setIslandIconMode('unlocked');
       setIslandActivity('pulse');
+      setIslandVisible(true);
+      islandSettleTimerRef.current = window.setTimeout(() => {
+        islandSettleTimerRef.current = null;
+        setIslandActivity('idle');
+      }, reduceMotion ? 180 : 760);
       setToast('Login success');
       await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, reduceMotion ? 120 : 760);
+        window.setTimeout(resolve, reduceMotion ? 220 : 960);
       });
       window.location.href = hasil.nextRoute || '/dashboard';
     } catch (err) {
@@ -143,7 +181,7 @@ function Lgnapp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--login">
-      <DynamicIsland iconMode={islandIconMode} activity={islandActivity} shakeKey={islandShakeKey} />
+      <DynamicIsland iconMode={islandIconMode} activity={islandActivity} shakeKey={islandShakeKey} visible={islandVisible} />
       <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}
@@ -156,7 +194,7 @@ function Lgnapp(): React.JSX.Element {
               <Hrltv />
             </div>
             <h2 className="auth-desktop-hero-title">Welcome to Nchat</h2>
-            <p className="auth-desktop-hero-subtitle">Need schedule your message or status? Start from here.</p>
+            <p className="auth-desktop-hero-subtitle">Need schedule your message or status? Start from here!</p>
             <div className="auth-dots auth-dots--desktop">
               <span className="auth-dot" />
               <span className="auth-dot is-active" />
@@ -181,7 +219,7 @@ function Lgnapp(): React.JSX.Element {
                   <div className="auth-intro-copy">
                     <p className="auth-brand">Nchat</p>
                     <h1 className="auth-intro-title">Welcome to Nchat</h1>
-                    <p className="auth-intro-subtitle">Need schedule your message or status? Get started here.</p>
+                    <p className="auth-intro-subtitle">Need schedule your message or status? Get started here</p>
                     <div className="auth-dots">
                       <span className="auth-dot" />
                       <span className="auth-dot is-active" />
@@ -223,7 +261,7 @@ function Lgnapp(): React.JSX.Element {
                       </svg>
                     </button>
                   ) : null}
-                  <span className="auth-brand auth-brand--inline">Nchat</span>
+                  <span className="auth-brand auth-brand--inline">Get Started</span>
                 </div>
 
                 <h1 className="auth-heading">

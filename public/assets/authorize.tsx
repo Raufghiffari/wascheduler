@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
 import { DynamicIsland } from './dynamic-island';
@@ -64,7 +64,13 @@ function Athrzapp(): React.JSX.Element {
   const [userId, setUserId] = useState('');
   const [toast, setToast] = useState('');
   const [showGate, setShowGate] = useState(true);
+  const [islandIconMode, setIslandIconMode] = useState<'locked' | 'unlocked'>('locked');
   const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('idle');
+  const [islandShakeKey, setIslandShakeKey] = useState(0);
+  const [islandVisible, setIslandVisible] = useState(false);
+  const islandHideTimerRef = useRef<number | null>(null);
+  const islandSettleTimerRef = useRef<number | null>(null);
+  const prevGateRef = useRef(showGate);
 
   const spring = useMemo(
     () =>
@@ -105,6 +111,62 @@ function Athrzapp(): React.JSX.Element {
     [reduceMotion],
   );
 
+  function resetIslandTimers(): void {
+    if (islandHideTimerRef.current !== null) {
+      window.clearTimeout(islandHideTimerRef.current);
+      islandHideTimerRef.current = null;
+    }
+    if (islandSettleTimerRef.current !== null) {
+      window.clearTimeout(islandSettleTimerRef.current);
+      islandSettleTimerRef.current = null;
+    }
+  }
+
+  function tampilkanIsland(config: {
+    iconMode: 'locked' | 'unlocked';
+    activity: 'idle' | 'pulse';
+    shake?: boolean;
+    hideAfterMs?: number;
+  }): void {
+    resetIslandTimers();
+    setIslandIconMode(config.iconMode);
+    setIslandActivity(config.activity);
+    setIslandVisible(true);
+    if (config.shake) {
+      setIslandShakeKey((prev) => prev + 1);
+    }
+
+    if (config.activity === 'pulse') {
+      islandSettleTimerRef.current = window.setTimeout(() => {
+        islandSettleTimerRef.current = null;
+        setIslandActivity('idle');
+      }, reduceMotion ? 180 : 760);
+    }
+
+    if (typeof config.hideAfterMs === 'number') {
+      islandHideTimerRef.current = window.setTimeout(() => {
+        islandHideTimerRef.current = null;
+        setIslandVisible(false);
+      }, config.hideAfterMs);
+    }
+  }
+
+  function picuIslandError(): void {
+    tampilkanIsland({
+      iconMode: 'locked',
+      activity: 'idle',
+      shake: true,
+      hideAfterMs: reduceMotion ? 680 : 1240,
+    });
+  }
+
+  useEffect(
+    () => () => {
+      resetIslandTimers();
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(''), 1800);
@@ -139,7 +201,10 @@ function Athrzapp(): React.JSX.Element {
       }
     }
 
-    void muatawl().catch((err) => setToast(err instanceof Error ? err.message : String(err)));
+    void muatawl().catch((err) => {
+      setToast(err instanceof Error ? err.message : String(err));
+      picuIslandError();
+    });
 
     return () => {
       aktif = false;
@@ -169,14 +234,24 @@ function Athrzapp(): React.JSX.Element {
   }, [userId, showGate]);
 
   useEffect(() => {
-    if (showGate || reduceMotion) {
-      setIslandActivity('idle');
+    const gateSebelumnya = prevGateRef.current;
+    if (gateSebelumnya === showGate) return;
+
+    prevGateRef.current = showGate;
+    if (showGate) {
+      tampilkanIsland({
+        iconMode: 'locked',
+        activity: 'pulse',
+        hideAfterMs: reduceMotion ? 620 : 1320,
+      });
       return;
     }
 
-    setIslandActivity('pulse');
-    const t = window.setTimeout(() => setIslandActivity('idle'), 920);
-    return () => window.clearTimeout(t);
+    tampilkanIsland({
+      iconMode: 'unlocked',
+      activity: 'pulse',
+      hideAfterMs: reduceMotion ? 700 : 1480,
+    });
   }, [showGate, reduceMotion]);
 
   const waCatatan = trjmhcttnwa(wa?.catatan || null);
@@ -184,7 +259,7 @@ function Athrzapp(): React.JSX.Element {
 
   return (
     <div className="authorizeLayout">
-      <DynamicIsland iconMode={showGate ? 'locked' : 'unlocked'} activity={showGate ? 'idle' : islandActivity} />
+      <DynamicIsland iconMode={islandIconMode} activity={islandActivity} shakeKey={islandShakeKey} visible={islandVisible} />
       <iframe
         title="dashboard-background"
         src="/dashboard-frame?embed=1"
