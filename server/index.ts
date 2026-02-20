@@ -70,7 +70,7 @@ export async function buatsrvr(): Promise<express.Express> {
 
   app.use('/fonts', express.static(path.join(process.cwd(), 'fonts')));
 
-  const ekstensiAssetDiizinkan = new Set(['.js', '.css']);
+  const ekstensiAssetDiizinkan = new Set(['.js', '.css', '.svg', '.lottie', '.json']);
   app.use('/assets', (req, res, next) => {
     const ekstensi = path.extname(req.path || '').toLowerCase();
     if (!ekstensiAssetDiizinkan.has(ekstensi)) {

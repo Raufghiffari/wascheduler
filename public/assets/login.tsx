@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
+import lottie from 'lottie-web';
+import animconData from './animcon.json';
 
 type LoginView = 'intro' | 'signin';
 type ResLogin = { ok: boolean; nextRoute?: string; pesan?: string };
@@ -20,11 +22,33 @@ async function krmlgn(username: string, password: string): Promise<ResLogin> {
   return (await res.json()) as ResLogin;
 }
 
+function Hrltv(): React.JSX.Element {
+  const hostRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
+    const anim = lottie.loadAnimation({
+      container: hostRef.current,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      animationData: animconData,
+      rendererSettings: {
+        preserveAspectRatio: 'xMidYMid meet',
+      },
+    });
+    return () => {
+      anim.destroy();
+    };
+  }, []);
+
+  return <div className="auth-hero-lottie" ref={hostRef} />;
+}
+
 function Lgnapp(): React.JSX.Element {
   const reduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = useState(() => cekvwprtmbl());
   const [view, setView] = useState<LoginView>(() => (cekvwprtmbl() ? 'intro' : 'signin'));
-  const [heroImageBroken, setHeroImageBroken] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -66,8 +90,6 @@ function Lgnapp(): React.JSX.Element {
     [reduceMotion],
   );
 
-  const heroImageSrc = '/assets/auth-hero.svg?v=2';
-
   async function aksmsk(): Promise<void> {
     const user = username.trim();
     const pass = password;
@@ -108,18 +130,9 @@ function Lgnapp(): React.JSX.Element {
       >
         <section className="auth-card auth-card--login">
           <aside className="auth-desktop-hero" aria-hidden="true">
-            {heroImageBroken ? (
-              <div className="auth-hero-fallback" aria-hidden="true">
-                <span>N</span>
-              </div>
-            ) : (
-              <img
-                src={heroImageSrc}
-                alt=""
-                className="auth-desktop-hero-image"
-                onError={() => setHeroImageBroken(true)}
-              />
-            )}
+            <div className="auth-hero-fallback auth-hero-fallback--lottie" aria-hidden="true">
+              <Hrltv />
+            </div>
             <h2 className="auth-desktop-hero-title">Welcome to Nchat</h2>
             <p className="auth-desktop-hero-subtitle">Need schedule your message or status? Start from here.</p>
             <div className="auth-dots auth-dots--desktop">
@@ -139,20 +152,10 @@ function Lgnapp(): React.JSX.Element {
                 exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
                 transition={spring}
               >
-                <div className="auth-intro-mnx">
-                  {heroImageBroken ? (
-                    <div className="auth-hero-fallback auth-hero-fallback--intro" aria-hidden="true">
-                      <span>N</span>
-                    </div>
-                  ) : (
-                    <img
-                      src={heroImageSrc}
-                      alt=""
-                      className="auth-intro-image"
-                      aria-hidden="true"
-                      onError={() => setHeroImageBroken(true)}
-                    />
-                  )}
+                <div className="auth-intro-main">
+                  <div className="auth-hero-fallback auth-hero-fallback--intro auth-hero-fallback--lottie" aria-hidden="true">
+                    <Hrltv />
+                  </div>
                   <div className="auth-intro-copy">
                     <p className="auth-brand">Nchat</p>
                     <h1 className="auth-intro-title">Welcome to Nchat</h1>
