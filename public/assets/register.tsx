@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
+import { DynamicIsland } from './dynamic-island';
 
 type ResRegister = { ok: boolean; nextRoute?: string; pesan?: string };
 
@@ -40,6 +41,7 @@ function Rgstrapp(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [toast, setToast] = useState('');
+  const [islandShakeKey, setIslandShakeKey] = useState(0);
 
   useEffect(() => {
     if (!toast) return;
@@ -62,6 +64,10 @@ function Rgstrapp(): React.JSX.Element {
 
   const heroImageSrc = '/assets/auth-hero.svg?v=2';
 
+  function picuIslandError(): void {
+    setIslandShakeKey((prev) => prev + 1);
+  }
+
   async function aksrgstr(): Promise<void> {
     const nama = name.trim();
     const pass = password;
@@ -71,6 +77,7 @@ function Rgstrapp(): React.JSX.Element {
       if (!akses) setShowAdvancedAccess(true);
       setErrorText('Name, password, and developer access are required');
       setToast('Complete all required fields');
+      picuIslandError();
       return;
     }
 
@@ -87,6 +94,7 @@ function Rgstrapp(): React.JSX.Element {
       if (!hasil.ok) {
         setErrorText(hasil.pesan || 'Register failed');
         setToast('Register failed');
+        picuIslandError();
         return;
       }
 
@@ -95,6 +103,7 @@ function Rgstrapp(): React.JSX.Element {
     } catch (err) {
       setErrorText(err instanceof Error ? err.message : String(err));
       setToast('Network error');
+      picuIslandError();
     } finally {
       setLoading(false);
     }
@@ -102,6 +111,7 @@ function Rgstrapp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--register">
+      <DynamicIsland iconMode="locked" activity="idle" shakeKey={islandShakeKey} />
       <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}

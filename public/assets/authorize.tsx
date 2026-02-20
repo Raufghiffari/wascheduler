@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
+import { DynamicIsland } from './dynamic-island';
 
 type StatusWa = {
   status: 'mati' | 'menghubungkan' | 'terhubung' | 'logout';
@@ -63,6 +64,7 @@ function Athrzapp(): React.JSX.Element {
   const [userId, setUserId] = useState('');
   const [toast, setToast] = useState('');
   const [showGate, setShowGate] = useState(true);
+  const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('idle');
 
   const spring = useMemo(
     () =>
@@ -166,11 +168,23 @@ function Athrzapp(): React.JSX.Element {
     window.history.replaceState(null, '', frmthshusrid(userId));
   }, [userId, showGate]);
 
+  useEffect(() => {
+    if (showGate || reduceMotion) {
+      setIslandActivity('idle');
+      return;
+    }
+
+    setIslandActivity('pulse');
+    const t = window.setTimeout(() => setIslandActivity('idle'), 920);
+    return () => window.clearTimeout(t);
+  }, [showGate, reduceMotion]);
+
   const waCatatan = trjmhcttnwa(wa?.catatan || null);
   const modeQr = wa?.qrDataUrl ? 'qr' : 'connecting';
 
   return (
     <div className="authorizeLayout">
+      <DynamicIsland iconMode={showGate ? 'locked' : 'unlocked'} activity={showGate ? 'idle' : islandActivity} />
       <iframe
         title="dashboard-background"
         src="/dashboard-frame?embed=1"

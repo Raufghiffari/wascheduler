@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
 import lottie from 'lottie-web';
 import animconData from './animcon.json';
+import { DynamicIsland } from './dynamic-island';
 
 type LoginView = 'intro' | 'signin';
 type ResLogin = { ok: boolean; nextRoute?: string; pesan?: string };
@@ -55,6 +56,9 @@ function Lgnapp(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [toast, setToast] = useState('');
+  const [islandIconMode, setIslandIconMode] = useState<'locked' | 'unlocked'>('locked');
+  const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('idle');
+  const [islandShakeKey, setIslandShakeKey] = useState(0);
 
   useEffect(() => {
     if (!toast) return;
@@ -90,12 +94,22 @@ function Lgnapp(): React.JSX.Element {
     [reduceMotion],
   );
 
+  function picuIslandError(): void {
+    setIslandIconMode('locked');
+    setIslandActivity('idle');
+    setIslandShakeKey((prev) => prev + 1);
+  }
+
   async function aksmsk(): Promise<void> {
     const user = username.trim();
     const pass = password;
+    setIslandIconMode('locked');
+    setIslandActivity('idle');
+
     if (!user || !pass) {
       setErrorText('Username and password are required');
       setToast('Fill username and password');
+      picuIslandError();
       return;
     }
 
@@ -107,14 +121,21 @@ function Lgnapp(): React.JSX.Element {
       if (!hasil.ok) {
         setErrorText(hasil.pesan || 'Login failed');
         setToast('Login failed');
+        picuIslandError();
         return;
       }
 
+      setIslandIconMode('unlocked');
+      setIslandActivity('pulse');
       setToast('Login success');
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, reduceMotion ? 120 : 760);
+      });
       window.location.href = hasil.nextRoute || '/dashboard';
     } catch (err) {
       setErrorText(err instanceof Error ? err.message : String(err));
       setToast('Network error');
+      picuIslandError();
     } finally {
       setLoading(false);
     }
@@ -122,6 +143,7 @@ function Lgnapp(): React.JSX.Element {
 
   return (
     <div className="auth-shell auth-shell--login">
+      <DynamicIsland iconMode={islandIconMode} activity={islandActivity} shakeKey={islandShakeKey} />
       <motion.mnx
         className="auth-stage"
         initial={reduceMotion ? undefined : { opacity: 0, y: 18 }}

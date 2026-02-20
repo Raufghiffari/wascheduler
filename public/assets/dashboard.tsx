@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
+import { DynamicIsland } from './dynamic-island';
 
 type StatusWa = {
   status: 'mati' | 'menghubungkan' | 'terhubung' | 'logout';
@@ -373,10 +374,34 @@ function Dshbrdapp(): React.JSX.Element {
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const [isSubmittingSend, setIsSubmittingSend] = useState(false);
+  const [islandActivity, setIslandActivity] = useState<'idle' | 'pulse'>('pulse');
+  const [islandVisible, setIslandVisible] = useState(() => !berjalanDalamFrame);
 
   const [nowMs, setNowMs] = useState(() => Date.now());
   const statusInputFileRef = useRef<HTMLInputElement>(null);
   const sendInputFileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (berjalanDalamFrame) {
+      setIslandVisible(false);
+      return;
+    }
+
+    setIslandVisible(true);
+    if (reduceMotion) {
+      setIslandActivity('idle');
+      const hideQuick = window.setTimeout(() => setIslandVisible(false), 220);
+      return () => window.clearTimeout(hideQuick);
+    }
+
+    setIslandActivity('pulse');
+    const settle = window.setTimeout(() => setIslandActivity('idle'), 880);
+    const hide = window.setTimeout(() => setIslandVisible(false), 1560);
+    return () => {
+      window.clearTimeout(settle);
+      window.clearTimeout(hide);
+    };
+  }, [reduceMotion, berjalanDalamFrame]);
 
   useEffect(() => {
     if (!toast) return;
@@ -717,6 +742,9 @@ function Dshbrdapp(): React.JSX.Element {
 
   return (
     <div className="appShell">
+      {!berjalanDalamFrame ? (
+        <DynamicIsland iconMode="unlocked" activity={islandActivity} visible={islandVisible} />
+      ) : null}
       <motion.mnx
         className="appContainer"
         initial={reduceMotion ? undefined : { opacity: 0, filter: 'blur(12px)', y: 22 }}

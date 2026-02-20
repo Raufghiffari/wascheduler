@@ -73,6 +73,9 @@
   --auth-ink: #1f2328;
   --auth-ink-soft: #606872;
   --auth-cta-dark: #1f2024;
+  --island-black-top: #1c1d24;
+  --island-black-mid: #0f1014;
+  --island-black-bottom: #040405;
 }
 
 * {
@@ -93,6 +96,86 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+.dynamicIslandPortal {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  pointer-events: none;
+  width: min(94vw, 242px);
+  display: flex;
+  justify-content: center;
+}
+
+.dynamicIsland {
+  position: relative;
+  width: 132px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #f6f8ff;
+  background:
+    linear-gradient(180deg, var(--island-black-top) 0%, var(--island-black-mid) 58%, var(--island-black-bottom) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.7),
+    0 11px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.dynamicIsland::before {
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 42%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.dynamicIsland::after {
+  content: "";
+  position: absolute;
+  inset: -16px 18% auto;
+  height: 26px;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(69, 102, 131, 0.24), rgba(69, 102, 131, 0));
+  pointer-events: none;
+}
+
+.dynamicIslandIcon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(241, 245, 252, 0.94);
+  flex-shrink: 0;
+}
+
+.dynamicIslandIcon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}
+
+.dynamicIsland--unlocked .dynamicIslandIcon {
+  color: rgba(145, 255, 201, 0.95);
+}
+
+.dynamicIsland.isPulse {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.13),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.72),
+    0 12px 25px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(90, 129, 160, 0.16);
 }
 
 button,
