@@ -1,6 +1,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 import lockfile from 'proper-lockfile';
 import { nanoid } from 'nanoid';
 import type { AkunUser, LogBaris, StatusWaDiDb, StrukturDatabase } from '../shared/tipe';
@@ -26,6 +27,16 @@ const opsiLockDatabase = {
   },
   realpath: false,
 };
+const maksimumRetryBacaDb = 5;
+const delayRetryAwalBacaDbMs = 15;
+
+type CacheSinkronEnv = {
+  envSignature: string;
+  userId: string;
+  passwordHash: string;
+};
+
+let cacheSinkronEnv: CacheSinkronEnv | null = null;
 
 export class DbBusyError extends Error {
   readonly code = 'DB_BUSY';
@@ -55,6 +66,13 @@ function amblpsswrdenv(): string {
 
 function amblnamelwr(nama: string): string {
   return String(nama || '').trim().toLowerCase();
+}
+
+function bttndtngnenv(username: string, password: string): string {
+  return crypto
+    .createHash('sha256')
+    .update(`${username}\u0000${password}`)
+    .digest('hex');
 }
 
 function iddsrusrdarinama(nama: string): string {
@@ -241,6 +259,7 @@ async function snkrnknusrenv(db: StrukturDatabase): Promise<{ envUserId: string;
   const username = amblusrnmenv();
   const password = amblpsswrdenv();
   const nameLower = amblnamelwr(username);
+  const envSignature = bttndtngnenv(username, password);
   const daftarId = new Set(db.users.map((u) => u.id));
 
   let user = db.users.find((u) => u.nameLower === nameLower);
@@ -270,7 +289,13 @@ async function snkrnknusrenv(db: StrukturDatabase): Promise<{ envUserId: string;
       berubah = true;
     }
 
-    const cocok = await vrfkspsswrd(password, user.passwordHash);
+    const cacheCocok =
+      Boolean(cacheSinkronEnv)
+      && cacheSinkronEnv?.envSignature === envSignature
+      && cacheSinkronEnv?.userId === user.id
+      && cacheSinkronEnv?.passwordHash === user.passwordHash;
+
+    const cocok = cacheCocok ? true : await vrfkspsswrd(password, user.passwordHash);
     if (!cocok) {
       user.passwordHash = await hshpsswrd(password);
       berubah = true;
@@ -281,6 +306,12 @@ async function snkrnknusrenv(db: StrukturDatabase): Promise<{ envUserId: string;
     db.waByUser[user.id] = buatsttswaawl();
     berubah = true;
   }
+
+  cacheSinkronEnv = {
+    envSignature,
+    userId: user.id,
+    passwordHash: user.passwordHash,
+  };
 
   return { envUserId: user.id, berubah };
 }
@@ -379,6 +410,36 @@ async function tlsdtbskedsk(db: StrukturDatabase): Promise<void> {
   await fs.rename(tmp, lokasiBerkasDb);
 }
 
+function tndknerrrbctsntbisaulng(err: unknown): boolean {
+  const e = nrmlsserrr(err) as Error & { code?: unknown };
+  const code = String(e.code || '');
+  return code === 'ENOENT' || code === 'EBUSY' || code === 'EAGAIN';
+}
+
+function tndtmndly(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function bacaberkasdbdgnretry(): Promise<string> {
+  let percobaan = 0;
+  let delayMs = delayRetryAwalBacaDbMs;
+
+  while (true) {
+    try {
+      return await fs.readFile(lokasiBerkasDb, { encoding: 'utf-8' });
+    } catch (err) {
+      if (!tndknerrrbctsntbisaulng(err) || percobaan >= maksimumRetryBacaDb) {
+        throw err;
+      }
+      await tndtmndly(delayMs);
+      delayMs = Math.min(delayMs * 2, 200);
+      percobaan += 1;
+    }
+  }
+}
+
 export async function pstkndtbsada(): Promise<void> {
   await fs.mkdir(lokasiFolderDb, { recursive: true });
 
@@ -392,22 +453,10 @@ export async function pstkndtbsada(): Promise<void> {
 
 export async function bacadtbs(): Promise<StrukturDatabase> {
   await pstkndtbsada();
-
-  const rilis = await ambllckdtbs();
-
-  try {
-    const isi = await fs.readFile(lokasiBerkasDb, { encoding: 'utf-8' });
-    const raw = bacajsnamn(isi);
-    const normal = await nrmlssdtbs(raw);
-
-    if (normal.berubah) {
-      await tlsdtbskedsk(normal.db);
-    }
-
-    return normal.db;
-  } finally {
-    await rilis();
-  }
+  const isi = await bacaberkasdbdgnretry();
+  const raw = bacajsnamn(isi);
+  const normal = await nrmlssdtbs(raw);
+  return normal.db;
 }
 
 export async function ubhdtbs(
@@ -448,6 +497,9 @@ export async function tmbhlog(
   await ubhdtbs((db) => {
     db.log.unshift(baris);
     if (db.log.length > 1000) db.log.length = 1000;
+  }).catch((err) => {
+    if (adlhdbbsyerrr(err)) return;
+    throw err;
   });
 }
 
